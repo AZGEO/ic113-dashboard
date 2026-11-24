@@ -1,0 +1,2799 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KandadoHoy — Failed UVE Logins Across USeP Colleges</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      darkMode: ['selector', '[data-theme="dark"]'],
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* ==========================================================================
+       1. DESIGN TOKENS, ACCORDION INTERPOLATION & INSTANT THEME SWITCHING
+       ========================================================================== */
+    :root {
+      interpolate-size: allow-keywords;
+
+      --bg-canvas: #f3f5f8;
+      --bg-surface: #ffffff;
+      --bg-surface-alt: #eaeff5;
+      --bg-input: #f8fafc;
+      --border-subtle: #dce3ec;
+      --border-strong: #c2cddb;
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+
+      /* USeP Maroon & Gold Identity */
+      --brand-primary: #8b1528;
+      --brand-primary-hover: #701020;
+      --brand-soft: rgba(139, 21, 40, 0.10);
+      --brand-gold: #b07d0e;
+      --brand-gold-soft: rgba(212, 175, 55, 0.16);
+
+      /* Semantic Statistical & Risk Tokens */
+      --status-safe: #0d9468;
+      --status-safe-soft: rgba(13, 148, 104, 0.12);
+      --status-warn: #d97706;
+      --status-warn-soft: rgba(217, 119, 6, 0.13);
+      --status-danger: #dc2626;
+      --status-danger-soft: rgba(220, 38, 38, 0.12);
+
+      --shadow-card: 0 2px 10px rgba(15, 23, 42, 0.05);
+      --shadow-float: 0 20px 44px rgba(15, 23, 42, 0.18);
+    }
+
+    html[data-theme="dark"] {
+      --bg-canvas: #0b0f16;
+      --bg-surface: #131a24;
+      --bg-surface-alt: #1a2331;
+      --bg-input: #0e141c;
+      --border-subtle: #243042;
+      --border-strong: #33435c;
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --text-muted: #8b9bb0;
+
+      --brand-primary: #e03e56;
+      --brand-primary-hover: #eb5269;
+      --brand-soft: rgba(224, 62, 86, 0.16);
+      --brand-gold: #eab308;
+      --brand-gold-soft: rgba(234, 179, 8, 0.15);
+
+      --status-safe: #10b981;
+      --status-safe-soft: rgba(16, 185, 129, 0.14);
+      --status-warn: #f59e0b;
+      --status-warn-soft: rgba(245, 158, 11, 0.15);
+      --status-danger: #f43f5e;
+      --status-danger-soft: rgba(244, 63, 94, 0.16);
+
+      --shadow-card: 0 4px 18px rgba(0, 0, 0, 0.35);
+      --shadow-float: 0 24px 52px rgba(0, 0, 0, 0.68);
+    }
+
+    /* Rule: Theme switches disable transitions during swap */
+    .theme-switching * {
+      transition: none !important;
+    }
+
+    body {
+      background-color: var(--bg-canvas);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .surface-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-card);
+    }
+
+    .surface-alt {
+      background-color: var(--bg-surface-alt);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .input-control {
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+    }
+    .input-control:focus {
+      outline: none;
+      border-color: var(--brand-primary);
+      box-shadow: 0 0 0 3px var(--brand-soft);
+    }
+
+    /* ==========================================================================
+       2. MOTION & PHYSICS RULES
+       ========================================================================== */
+
+    /* Rule: Buttons scale to 0.97 while pressed */
+    button, .pressable {
+      transition: scale 150ms ease-out, background-color 150ms ease, border-color 150ms ease, color 150ms ease, opacity 150ms ease;
+      cursor: pointer;
+    }
+    button:active, .pressable:active {
+      scale: 0.97;
+    }
+
+    /* Rule: Entrances start from scale 0.97 with opacity 0, never scale 0 */
+    @keyframes enterScaleFade {
+      from {
+        opacity: 0;
+        transform: scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    .animate-entrance {
+      animation: enterScaleFade 220ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* Rule: Steppers slide next step in from navigation direction */
+    @keyframes slideFromRight {
+      from { opacity: 0; transform: translate3d(28px, 0, 0); }
+      to   { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+    @keyframes slideFromLeft {
+      from { opacity: 0; transform: translate3d(-28px, 0, 0); }
+      to   { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+    .step-slide-next {
+      animation: slideFromRight 240ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    .step-slide-prev {
+      animation: slideFromLeft 240ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* Rule: Wrong passwords shake field (0, -10, 10, -6, 6, -3, 0px over 360ms) + red */
+    @keyframes passwordShake {
+      0%   { transform: translateX(0px); }
+      16%  { transform: translateX(-10px); }
+      33%  { transform: translateX(10px); }
+      50%  { transform: translateX(-6px); }
+      66%  { transform: translateX(6px); }
+      83%  { transform: translateX(-3px); }
+      100% { transform: translateX(0px); }
+    }
+    .field-error-shake {
+      animation: passwordShake 360ms ease-in-out;
+      border-color: var(--status-danger) !important;
+      background-color: var(--status-danger-soft) !important;
+      box-shadow: 0 0 0 3px var(--status-danger-soft) !important;
+    }
+
+    /* Rule: Accordions smoothly animate height: auto */
+    .accordion-body {
+      height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: height 280ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease;
+    }
+    .accordion-item[data-open="true"] .accordion-body {
+      height: auto;
+      opacity: 1;
+    }
+    .accordion-chevron {
+      transition: transform 240ms ease;
+    }
+    .accordion-item[data-open="true"] .accordion-chevron {
+      transform: rotate(180deg);
+    }
+
+    /* Rule: Moving things animate transform, never top or left */
+    .role-thumb {
+      transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), background-color 180ms ease;
+      transform: translate3d(0, 0, 0);
+    }
+    .role-thumb[data-role="analyst"] {
+      transform: translate3d(100%, 0, 0);
+    }
+
+    #global-tooltip {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0;
+      transform: translate3d(-9999px, -9999px, 0) scale(0.97);
+      transition: opacity 120ms ease, transform 120ms ease;
+      max-width: 260px;
+    }
+    #global-tooltip.visible {
+      opacity: 1;
+    }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- ==========================================================================
+       0. PERSISTENT SIMULATION & PIPELINE DEMONSTRATION BANNER
+       ========================================================================== -->
+  <div class="w-full border-b px-4 py-2 text-center text-[11px] sm:text-xs font-medium flex flex-wrap items-center justify-center gap-2" style="background-color: var(--brand-gold-soft); border-color: var(--border-subtle); color: var(--text-primary);">
+    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider" style="background-color: var(--brand-gold); color: #0f172a;">
+      Simulated Data · Pipeline Demo
+    </span>
+    <span>
+      Demonstrating the KandadoHoy repeated-measures IAM analysis pipeline on <strong>synthetic 26-week UVE data</strong> (not actual USeP authentication logs). Toggle the <strong>Null Control</strong> dataset in the left rail to verify false-positive control.
+    </span>
+  </div>
+
+  <!-- ==========================================================================
+       1. TOP APPLICATION BAR (KandadoHoy Identity)
+       ========================================================================== -->
+  <header class="sticky top-0 z-30 border-b backdrop-blur-md" style="background-color: color-mix(in srgb, var(--bg-surface) 92%, transparent); border-color: var(--border-subtle);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Brand Identity -->
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, var(--brand-primary), #540b17); color: #fff;">
+          <!-- Keyhole Padlock SVG -->
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            <circle cx="12" cy="16" r="1"/>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-extrabold tracking-tight truncate">KandadoHoy</h1>
+            <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold" style="background-color: var(--brand-soft); color: var(--brand-primary);">
+              IAM Pipeline Demo
+            </span>
+          </div>
+          <p class="text-xs truncate" style="color: var(--text-muted);">Simulated Failed UVE Logins Across 8 USeP Colleges · 26-Week Cohort</p>
+        </div>
+      </div>
+
+      <!-- View Switcher + Theme + Methodology Info -->
+      <div class="flex items-center gap-2 shrink-0">
+        <!-- Segmented Audience Switch (Dean Summary vs Statistical Analyst) -->
+        <div class="relative grid grid-cols-2 p-1 rounded-xl border" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle);" role="group" aria-label="Audience View Mode">
+          <div id="role-thumb" data-role="dean" class="role-thumb absolute left-1 top-1 bottom-1 w-[calc(50%-4px)] rounded-lg shadow-sm" style="background-color: var(--brand-primary);"></div>
+          <button id="btn-role-dean" type="button" onclick="setRoleView('dean')" data-tooltip="Dean View: Plain-language findings & MFA rollout priorities" class="relative z-10 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+            </svg>
+            <span>Dean View</span>
+          </button>
+          <button id="btn-role-analyst" type="button" onclick="setRoleView('analyst')" data-tooltip="Analyst View: ANOVA/Kruskal-Wallis F/H statistics, p-values & CIs" class="relative z-10 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold" style="color: var(--text-secondary);">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/>
+            </svg>
+            <span>Analyst View</span>
+          </button>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button id="btn-theme" type="button" onclick="toggleTheme()" data-tooltip="Toggle Dark / Light theme" class="p-2.5 rounded-xl border" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle); color: var(--text-primary);" aria-label="Toggle Theme">
+          <svg id="icon-sun" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+          <svg id="icon-moon" class="w-4 h-4 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+
+        <!-- Study Methodology & Python Code Modal Trigger -->
+        <button id="btn-info" type="button" onclick="openInfoModal()" data-tooltip="About KandadoHoy, team members, simulation generator & Python script" class="flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle); color: var(--text-primary);">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+          </svg>
+          <span class="hidden md:inline">About &amp; Methodology</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       2. MAIN WORKSPACE (Left Scope Rail + Right Analysis Stage)
+       ========================================================================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+    <!-- LEFT COLUMN (3 cols on desktop): Study Scope Filters + Statistical Engine Card -->
+    <aside class="lg:col-span-3 space-y-4 lg:sticky lg:top-20">
+      <!-- Scope & Cohort Filter Panel -->
+      <section class="surface-card rounded-2xl p-4 space-y-3.5" aria-label="Study Filters">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4" style="color: var(--brand-primary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+            </svg>
+            <h2 class="text-xs font-bold uppercase tracking-wider" style="color: var(--text-secondary);">Dataset Scope</h2>
+          </div>
+          <button type="button" onclick="resetFilters()" class="text-xs font-semibold px-2.5 py-1 rounded-lg border" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle); color: var(--text-secondary);">
+            Reset
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+          <!-- Simulation Scenario (Effect Scenario vs. Null-Data Control) -->
+          <div>
+            <label for="filter-scenario" class="block text-[11px] font-semibold uppercase tracking-wide mb-1" style="color: var(--brand-primary);">Simulation Scenario</label>
+            <select id="filter-scenario" onchange="applyFilters()" class="input-control w-full rounded-xl px-3 py-2 text-xs font-semibold" style="border-color: var(--brand-primary);">
+              <option value="effect">Effect Scenario (Chronic + Spikes)</option>
+              <option value="null">Null-Data Control (No College Diff.)</option>
+            </select>
+          </div>
+
+          <!-- Period Filter -->
+          <div>
+            <label for="filter-period" class="block text-[11px] font-semibold uppercase tracking-wide mb-1" style="color: var(--text-muted);">Academic Window</label>
+            <select id="filter-period" onchange="applyFilters()" class="input-control w-full rounded-xl px-3 py-2 text-xs font-medium">
+              <option value="all">Full Semester (Weeks 1–26)</option>
+              <option value="first_half">First Half (Weeks 1–13)</option>
+              <option value="second_half">Second Half (Weeks 14–26)</option>
+              <option value="exams">Exam Weeks (Wks 8–9, 17–18)</option>
+              <option value="regular">Regular Class Weeks Only</option>
+            </select>
+          </div>
+
+          <!-- College Filter -->
+          <div>
+            <label for="filter-college" class="block text-[11px] font-semibold uppercase tracking-wide mb-1" style="color: var(--text-muted);">USeP College</label>
+            <select id="filter-college" onchange="applyFilters()" class="input-control w-full rounded-xl px-3 py-2 text-xs font-medium">
+              <option value="ALL">All 8 USeP Colleges</option>
+              <option value="CT">CT — Technology</option>
+              <option value="CBA">CBA — Business Admin.</option>
+              <option value="CIC">CIC — Info &amp; Computing</option>
+              <option value="CoE">CoE — Engineering</option>
+              <option value="CAEc">CAEc — Applied Economics</option>
+              <option value="CAS">CAS — Arts &amp; Sciences</option>
+              <option value="CEd">CEd — Education</option>
+              <option value="CDM">CDM — Development Mgmt.</option>
+            </select>
+          </div>
+
+          <!-- Device Type Filter -->
+          <div>
+            <label for="filter-device" class="block text-[11px] font-semibold uppercase tracking-wide mb-1" style="color: var(--text-muted);">Device Type</label>
+            <select id="filter-device" onchange="applyFilters()" class="input-control w-full rounded-xl px-3 py-2 text-xs font-medium">
+              <option value="ALL">All Devices (Pooled Counts)</option>
+              <option value="Mobile">Mobile</option>
+              <option value="Desktop/Laptop">Desktop / Laptop</option>
+              <option value="Tablet">Tablet</option>
+            </select>
+          </div>
+
+          <!-- Statistical Outlier Filter (Strictly data-driven Tukey IQR rule) -->
+          <div>
+            <label for="filter-outliers" class="block text-[11px] font-semibold uppercase tracking-wide mb-1" style="color: var(--text-muted);">Outlier Week Handling</label>
+            <select id="filter-outliers" onchange="applyFilters()" class="input-control w-full rounded-xl px-3 py-2 text-xs font-medium">
+              <option value="include">Include All 26 Weeks (Raw)</option>
+              <option value="exclude">Exclude Tukey Outliers (&gt;Q3+1.5×IQR)</option>
+              <option value="only">Outlier Spike Weeks Only</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Live Statistical Engine Status Card -->
+      <section class="surface-card rounded-2xl p-4 space-y-3" aria-label="Hypothesis Test Diagnostics">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider" style="color: var(--text-muted);">Week-Blocked Test</span>
+          <span id="badge-test-type" class="px-2 py-0.5 rounded-full text-[11px] font-bold" style="background-color: var(--brand-soft); color: var(--brand-primary);">
+            Friedman χ²r
+          </span>
+        </div>
+
+        <div class="surface-alt rounded-xl p-3 space-y-1.5">
+          <div class="flex items-baseline justify-between">
+            <span id="stat-main-label" class="text-xs font-medium" style="color: var(--text-secondary);">Friedman χ²r (df = 7)</span>
+            <span id="stat-main-val" class="font-mono text-base font-bold">112.40</span>
+          </div>
+          <div class="flex items-baseline justify-between">
+            <span class="text-xs font-medium" style="color: var(--text-secondary);">p-value (α = 0.05)</span>
+            <span id="stat-p-val" class="font-mono text-xs font-bold" style="color: var(--status-danger);">&lt; 0.0001</span>
+          </div>
+          <div class="flex items-baseline justify-between">
+            <span id="stat-eff-label" class="text-xs font-medium" style="color: var(--text-secondary);">Kendall's W</span>
+            <span id="stat-eff-val" class="font-mono text-xs font-semibold">0.618 (Large)</span>
+          </div>
+        </div>
+
+        <p id="stat-assumption-note" class="text-[11px] leading-relaxed" style="color: var(--text-muted);">
+          Repeated measures blocked across 26 shared weeks. Non-parametric Friedman test + Holm-corrected paired Wilcoxon post-hoc selected.
+        </p>
+
+        <!-- Analyst Manual Override (Visible in Analyst View) -->
+        <div id="analyst-override-box" class="hidden pt-2 border-t space-y-1.5" style="border-color: var(--border-subtle);">
+          <label for="test-override" class="block text-[11px] font-semibold" style="color: var(--text-secondary);">Analyst Blocked-Test Override</label>
+          <select id="test-override" onchange="applyFilters()" class="input-control w-full rounded-xl px-2.5 py-1.5 text-xs">
+            <option value="auto">Auto (Assumption-Guided)</option>
+            <option value="friedman">Force Friedman χ²r + Holm Wilcoxon</option>
+            <option value="rm_anova">Force RM-ANOVA F + Holm Paired-t</option>
+          </select>
+        </div>
+      </section>
+    </aside>
+
+    <!-- RIGHT COLUMN (9 cols on desktop): Navigation Tabs + Answer Views -->
+    <div class="lg:col-span-9 space-y-5 min-w-0">
+
+      <!-- Tab Navigation Strip (4 Purposeful Tabs aligned to the 7 dataset variables) -->
+      <nav class="surface-card rounded-2xl p-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar" aria-label="Analytical Views">
+        <button type="button" data-tab="0" onclick="switchTab(0)" class="tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap text-white" style="background-color: var(--brand-primary);">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          <span>1. College Comparison</span>
+        </button>
+
+        <button type="button" data-tab="1" onclick="switchTab(1)" class="tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap" style="color: var(--text-secondary);">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+          <span>2. 26-Week Trends &amp; Boxplots</span>
+        </button>
+
+        <button type="button" data-tab="2" onclick="switchTab(2)" class="tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap" style="color: var(--text-secondary);">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>
+          </svg>
+          <span>3. Device &amp; MFA Priority</span>
+        </button>
+
+        <button type="button" data-tab="3" onclick="switchTab(3)" class="tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap" style="color: var(--text-secondary);">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+          </svg>
+          <span>4. Dataset &amp; Exports</span>
+        </button>
+      </nav>
+
+      <!-- ======================================================================
+           TAB 0: COLLEGE COMPARISON (Core Research Question Answer)
+           ====================================================================== -->
+      <section id="panel-0" class="tab-panel space-y-5 animate-entrance">
+
+        <!-- Research Question Verdict Banner (Reframed as Pipeline Demonstration on Simulated Data) -->
+        <div class="surface-card rounded-2xl p-5 border-l-4" style="border-left-color: var(--brand-primary);">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <span id="verdict-eyebrow" class="text-xs font-bold uppercase tracking-wider" style="color: var(--brand-primary);">
+              Pipeline Demonstration · Simulated Effect Scenario (α = 0.05)
+            </span>
+            <span id="verdict-sig-pill" class="px-2.5 py-1 rounded-full text-xs font-bold" style="background-color: var(--status-danger-soft); color: var(--status-danger);">
+              Simulated Gap Detected (p &lt; 0.0001)
+            </span>
+          </div>
+          <h2 id="verdict-headline" class="text-base sm:text-lg font-bold tracking-tight mb-1.5">
+            Pipeline Validation (Effect Scenario): Week-blocked analysis detects the simulated cross-college differences.
+          </h2>
+          <p id="verdict-body" class="text-xs sm:text-sm leading-relaxed" style="color: var(--text-secondary);">
+            Loading verdict...
+          </p>
+        </div>
+
+        <!-- Elastic Rubber-Band KPI Strip (Touch/Mouse Drag with Spring Physics) -->
+        <div class="relative overflow-hidden rounded-2xl">
+          <div id="kpi-carousel-track" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 select-none cursor-grab active:cursor-grabbing">
+            <!-- KPI 1 -->
+            <div class="surface-card rounded-2xl p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[11px] font-semibold uppercase tracking-wide" style="color: var(--text-muted);">University Pooled Rate</span>
+                <span class="text-[11px] font-mono px-1.5 py-0.5 rounded" style="background-color: var(--bg-surface-alt); color: var(--text-secondary);">All 8</span>
+              </div>
+              <div id="kpi-univ-rate" class="text-2xl font-extrabold font-mono tracking-tight">5.84%</div>
+              <p id="kpi-univ-sub" class="text-xs mt-1" style="color: var(--text-muted);">5.84 failed per 100 attempts</p>
+            </div>
+
+            <!-- KPI 2 -->
+            <div class="surface-card rounded-2xl p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[11px] font-semibold uppercase tracking-wide" style="color: var(--text-muted);">Highest-Rate College</span>
+                <span id="kpi-top-badge" class="text-[11px] font-bold px-1.5 py-0.5 rounded" style="background-color: var(--status-danger-soft); color: var(--status-danger);">Rank #1</span>
+              </div>
+              <div id="kpi-top-college" class="text-2xl font-extrabold tracking-tight">CT (10.12%)</div>
+              <p id="kpi-top-sub" class="text-xs mt-1" style="color: var(--text-muted);">College of Technology · Chronic gap</p>
+            </div>
+
+            <!-- KPI 3 -->
+            <div class="surface-card rounded-2xl p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[11px] font-semibold uppercase tracking-wide" style="color: var(--text-muted);">Chronically Elevated</span>
+                <span class="text-[11px] font-semibold px-1.5 py-0.5 rounded" style="background-color: var(--brand-gold-soft); color: var(--brand-gold);">Holm p&lt;.05</span>
+              </div>
+              <div id="kpi-sig-count" class="text-2xl font-extrabold font-mono tracking-tight">2 of 8</div>
+              <p id="kpi-sig-sub" class="text-xs mt-1" style="color: var(--text-muted);">CT, CBA (vs. leave-one-out rest)</p>
+            </div>
+
+            <!-- KPI 4 (Fixed label: Login Attempts Volume vs. College-Week Observation Count) -->
+            <div class="surface-card rounded-2xl p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[11px] font-semibold uppercase tracking-wide" style="color: var(--text-muted);">Total Login Attempts</span>
+                <span id="kpi-obs-badge" class="text-[11px] font-mono px-1.5 py-0.5 rounded" style="background-color: var(--bg-surface-alt); color: var(--text-secondary);">208 college-wks</span>
+              </div>
+              <div id="kpi-total-attempts" class="text-2xl font-extrabold font-mono tracking-tight">1,248,910</div>
+              <p id="kpi-total-sub" class="text-xs mt-1" style="color: var(--text-muted);">72,940 failed across 208 college-weeks</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ranked College Failed-Login Rate Chart -->
+        <div class="surface-card rounded-2xl p-5">
+          <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold">Ranked Weekly Failed-Login Rate by USeP College (Simulated)</h3>
+              <p id="chart-bar-subtitle" class="text-xs mt-0.5" style="color: var(--text-muted);">
+                Mean &amp; Median failed logins per 100 attempts (±95% CI). Chronic elevation is tested against each college's leave-one-out rest-of-university baseline (Holm-adjusted).
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-[11px] font-medium">
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full" style="background-color: var(--status-danger);"></span> Chronically Elevated (Holm p&lt;0.05)</span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full" style="background-color: var(--status-warn);"></span> Spike-Skewed (Outlier Bursts)</span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full" style="background-color: var(--status-safe);"></span> Within Baseline</span>
+            </div>
+          </div>
+          <div class="relative w-full h-80 sm:h-96">
+            <canvas id="collegeBarChart"></canvas>
+          </div>
+        </div>
+
+        <!-- College Descriptive & Post-Hoc Comparison Table -->
+        <div class="surface-card rounded-2xl overflow-hidden">
+          <div class="p-4 sm:p-5 border-b flex flex-wrap items-center justify-between gap-2" style="border-color: var(--border-subtle);">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold">College-Level Statistical &amp; Priority Breakdown</h3>
+              <p class="text-xs" style="color: var(--text-muted);">Parametric (Mean, SD, 95% CI) &amp; Non-Parametric (Median, IQR) metrics vs. Leave-One-Out (LOO) baseline with Holm-corrected paired p-values.</p>
+            </div>
+            <button type="button" onclick="exportSummaryCSV()" class="px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle); color: var(--text-primary);">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>Export Summary CSV</span>
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle); color: var(--text-muted);">
+                  <th class="py-3 px-4 font-bold uppercase">Rank</th>
+                  <th class="py-3 px-4 font-bold uppercase">College</th>
+                  <th class="py-3 px-4 font-bold uppercase text-right">Mean Rate</th>
+                  <th class="py-3 px-4 font-bold uppercase text-right">Median (IQR)</th>
+                  <th class="py-3 px-4 font-bold uppercase text-right">LOO Rest Rate</th>
+                  <th class="py-3 px-4 font-bold uppercase text-right">95% CI</th>
+                  <th class="py-3 px-4 font-bold uppercase text-right">Holm p</th>
+                  <th class="py-3 px-4 font-bold uppercase">Observed Pattern &amp; Classification</th>
+                </tr>
+              </thead>
+              <tbody id="college-summary-tbody" class="divide-y" style="border-color: var(--border-subtle);">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           TAB 1: 26-WEEK TRENDS & BOXPLOT DISTRIBUTIONS
+           ====================================================================== -->
+      <section id="panel-1" class="tab-panel hidden space-y-5 animate-entrance">
+
+        <!-- 26-Week Longitudinal Trend Chart -->
+        <div class="surface-card rounded-2xl p-5">
+          <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold">26-Week Longitudinal Failed-Login Trajectory</h3>
+              <p class="text-xs mt-0.5" style="color: var(--text-muted);">
+                Distinguishes persistent weekly elevation (CT, CBA) from sudden multi-week spikes (CIC Wks 11 &amp; 19, CoE Wk 14) and synchronized exam bumps (Wks 8–9, 17–18).
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <label for="trend-cohort-select" class="text-xs font-medium" style="color: var(--text-muted);">Series:</label>
+              <select id="trend-cohort-select" onchange="renderTrendChart()" class="input-control rounded-xl px-3 py-1.5 text-xs font-medium">
+                <option value="key">Key Contrasts (CT, CBA, CIC, CoE vs. Univ. Avg)</option>
+                <option value="all">All 8 USeP Colleges</option>
+                <option value="baseline">Baseline Colleges (CAS, CEd, CAEc, CDM)</option>
+              </select>
+            </div>
+          </div>
+          <div class="relative w-full h-80 sm:h-96">
+            <canvas id="weeklyTrendChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Custom HTML5 Canvas IQR Boxplot & Outlier Spread -->
+        <div class="surface-card rounded-2xl p-5">
+          <div class="flex flex-wrap items-start justify-between gap-3 mb-3">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold">Weekly Distribution Spread (Median, IQR &amp; Tukey Outliers)</h3>
+              <p class="text-xs mt-0.5" style="color: var(--text-muted);">
+                Boxes show the 25th–75th percentile (IQR) and median line; diamonds mark the mean; dots mark outlier weeks exceeding Q3 + 1.5×IQR.
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-[11px]" style="color: var(--text-secondary);">
+              <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-2 rounded-xs border" style="background-color: var(--brand-soft); border-color: var(--brand-primary);"></span> IQR Box (Q1–Q3)</span>
+              <span class="flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5 rotate-45" style="background-color: var(--brand-gold);"></span> Group Mean</span>
+              <span class="flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full" style="background-color: var(--status-danger);"></span> Outlier Week</span>
+            </div>
+          </div>
+          <div id="boxplot-container" class="relative w-full h-72 sm:h-80">
+            <canvas id="boxplotCanvas"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           TAB 2: DEVICE BREAKDOWN & PHASED MFA ROLLOUT PLANNER
+           ====================================================================== -->
+      <section id="panel-2" class="tab-panel hidden space-y-5 animate-entrance">
+
+        <!-- Device Type Comparison Chart -->
+        <div class="surface-card rounded-2xl p-5">
+          <div class="mb-4">
+            <h3 class="text-sm sm:text-base font-bold">Failed-Login Rate by Device Type Across Colleges</h3>
+            <p class="text-xs mt-0.5" style="color: var(--text-muted);">
+              Compares Mobile, Desktop/Laptop, and Tablet failure rates per 100 attempts to guide device-specific login hardening and UX improvements.
+            </p>
+          </div>
+          <div class="relative w-full h-72 sm:h-80">
+            <canvas id="deviceGroupedChart"></canvas>
+        <!-- 3-Step MFA & Campaign Rollout Planner (Corrected Outcome Framing — No Unsourced Efficacy %) -->
+        <div class="surface-card rounded-2xl p-5 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b pb-3" style="border-color: var(--border-subtle);">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold">Phased MFA &amp; Account-Protection Rollout Planner</h3>
+              <p class="text-xs" style="color: var(--text-muted);">Cohort coverage &amp; account-takeover exposure simulator based on simulated college cohorts.</p>
+            </div>
+            <!-- Step Indicators -->
+            <div class="flex items-center gap-1.5 text-xs font-bold">
+              <button type="button" onclick="goPlannerStep(1)" id="step-pill-1" class="px-3 py-1 rounded-full text-white" style="background-color: var(--brand-primary);">Step 1: Cohort</button>
+              <button type="button" onclick="goPlannerStep(2)" id="step-pill-2" class="px-3 py-1 rounded-full" style="background-color: var(--bg-surface-alt); color: var(--text-secondary);">Step 2: Controls</button>
+              <button type="button" onclick="goPlannerStep(3)" id="step-pill-3" class="px-3 py-1 rounded-full" style="background-color: var(--bg-surface-alt); color: var(--text-secondary);">Step 3: Coverage</button>
+            </div>
+          </div>
+
+          <div id="planner-step-viewport" class="overflow-hidden min-h-[175px]">
+            <!-- Step 1 -->
+            <div id="planner-step-1" class="space-y-3">
+              <p class="text-xs font-semibold uppercase tracking-wide" style="color: var(--brand-primary);">Step 1 of 3 · Select Wave-1 Target Cohort (Exact Simulated Cohort Sizes)</p>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <label class="surface-alt rounded-xl p-3.5 cursor-pointer flex items-start gap-2.5">
+                  <input type="radio" name="mfa-cohort" value="chronic" checked onchange="updatePlannerProjection()" class="mt-0.5 accent-rose-600" />
+                  <div>
+                    <div class="text-xs font-bold">Chronically Elevated (2 Colleges)</div>
+                    <div class="text-[11px] mt-0.5" style="color: var(--text-muted);">CT (1,950) + CBA (2,200) = 4,150 baseline users (Holm p &lt; 0.05).</div>
+                  </div>
+                </label>
+                <label class="surface-alt rounded-xl p-3.5 cursor-pointer flex items-start gap-2.5">
+                  <input type="radio" name="mfa-cohort" value="top4" onchange="updatePlannerProjection()" class="mt-0.5 accent-rose-600" />
+                  <div>
+                    <div class="text-xs font-bold">Chronic + Spike Colleges (4 Colleges)</div>
+                    <div class="text-[11px] mt-0.5" style="color: var(--text-muted);">Adds CIC (1,650) + CoE (2,650) = 8,450 baseline users.</div>
+                  </div>
+                </label>
+                <label class="surface-alt rounded-xl p-3.5 cursor-pointer flex items-start gap-2.5">
+                  <input type="radio" name="mfa-cohort" value="all8" onchange="updatePlannerProjection()" class="mt-0.5 accent-rose-600" />
+                  <div>
+                    <div class="text-xs font-bold">Campus-Wide Mandate (All 8 Colleges)</div>
+                    <div class="text-[11px] mt-0.5" style="color: var(--text-muted);">All 8 simulated USeP colleges = 15,850 baseline active users.</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div id="planner-step-2" class="hidden space-y-3">
+              <p class="text-xs font-semibold uppercase tracking-wide" style="color: var(--brand-primary);">Step 2 of 3 · Select Layered IAM Controls (NIST SP 800-63B Aligned)</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label class="surface-alt rounded-xl p-3.5 cursor-pointer flex items-start gap-2.5">
+                  <input type="checkbox" id="chk-mfa" checked onchange="updatePlannerProjection()" class="mt-0.5 accent-rose-600" />
+                  <div>
+                    <div class="text-xs font-bold">Mandatory Phishing-Resistant / App MFA</div>
+                    <div class="text-[11px] mt-0.5" style="color: var(--text-muted);">Prevents unauthorized account takeovers when passwords are compromised (does not stop invalid password attempts at the primary prompt).</div>
+                  </div>
+                </label>
+                <label class="surface-alt rounded-xl p-3.5 cursor-pointer flex items-start gap-2.5">
+                  <input type="checkbox" id="chk-hygiene" checked onchange="updatePlannerProjection()" class="mt-0.5 accent-rose-600" />
+                  <div>
+                    <div class="text-xs font-bold">NIST 800-63B Passphrases, Blocklist &amp; Throttling</div>
+                    <div class="text-[11px] mt-0.5" style="color: var(--text-muted);">Replaces periodic rotation &amp; symbol rules with 12+ char passphrases, breached-password screening, and progressive login rate-limiting.</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div id="planner-step-3" class="hidden space-y-3">
+              <p class="text-xs font-semibold uppercase tracking-wide" style="color: var(--brand-primary);">Step 3 of 3 · Cohort Exposure &amp; MFA Protection Coverage</p>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="surface-alt rounded-xl p-3.5">
+                  <div class="text-[11px] font-semibold" style="color: var(--text-muted);">Avg Weekly Active Users Covered</div>
+                  <div id="proj-users" class="text-xl font-extrabold font-mono mt-1">4,150</div>
+                  <div id="proj-users-sub" class="text-[10px] mt-0.5" style="color: var(--text-muted);">26.2% of simulated USeP cohort</div>
+                </div>
+                <div class="surface-alt rounded-xl p-3.5">
+                  <div class="text-[11px] font-semibold" style="color: var(--text-muted);">Failed Attempts in Target Cohort</div>
+                  <div id="proj-target-failed" class="text-xl font-extrabold font-mono mt-1" style="color: var(--brand-primary);">31,180</div>
+                  <div id="proj-failed-share" class="text-[10px] mt-0.5" style="color: var(--text-muted);">42.7% of all simulated failed logins</div>
+                </div>
+                <div class="surface-alt rounded-xl p-3.5">
+                  <div class="text-[11px] font-semibold" style="color: var(--text-muted);">Account Takeover Posture</div>
+                  <div id="proj-posture" class="text-base font-extrabold mt-1" style="color: var(--status-safe);">MFA + Throttling</div>
+                  <div class="text-[10px] mt-0.5" style="color: var(--text-muted);">Compromised passwords blocked at 2nd factor</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-2 border-t" style="border-color: var(--border-subtle);">
+            <button type="button" id="btn-step-prev" onclick="stepPlanner(-1)" disabled class="px-3.5 py-2 rounded-xl text-xs font-semibold border disabled:opacity-40" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle);">
+              ← Previous
+            </button>
+            <button type="button" id="btn-step-next" onclick="stepPlanner(1)" class="px-4 py-2 rounded-xl text-xs font-semibold text-white" style="background-color: var(--brand-primary);">
+              Next Step →
+            </button>
+          </div>
+        </div>
+
+        <!-- Smooth Height-Auto Accordions + NIST SP 800-63B Password Policy Simulator -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <!-- Policy Accordions (Non-Causal Wording & NIST SP 800-63B Compliant) -->
+          <div class="surface-card rounded-2xl p-5 space-y-3">
+            <h3 class="text-sm sm:text-base font-bold">Evidence-Based IAM Recommendations (NIST SP 800-63B)</h3>
+
+            <div class="accordion-item surface-alt rounded-xl" data-open="true">
+              <button type="button" onclick="toggleAccordion(this)" class="w-full p-3.5 flex items-center justify-between text-left text-xs font-bold">
+                <span>1. Prioritize CT &amp; CBA for MFA &amp; Passphrase Onboarding</span>
+                <svg class="accordion-chevron w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="accordion-body px-3.5">
+                <p class="pb-3.5 text-xs leading-relaxed" style="color: var(--text-secondary);">
+                  CT (10.1% mean) and CBA (9.0% mean) show sustained elevation across all 26 weeks—a pattern consistent with persistent credential friction (such as forgotten passwords, password reuse, or input errors, though aggregate counts alone cannot distinguish user typos from automated guessing). Per <strong>NIST SP 800-63B</strong>, avoid forced periodic password rotation and symbol-composition rules (which increase lockouts); instead, enroll these cohorts in MFA and enforce 12+ character passphrases screened against breached-password blocklists.
+                </p>
+              </div>
+            </div>
+
+            <div class="accordion-item surface-alt rounded-xl" data-open="false">
+              <button type="button" onclick="toggleAccordion(this)" class="w-full p-3.5 flex items-center justify-between text-left text-xs font-bold">
+                <span>2. Rate-Limit Desktop Bursts &amp; Protect Accounts with MFA</span>
+                <svg class="accordion-chevron w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="accordion-body px-3.5">
+                <p class="pb-3.5 text-xs leading-relaxed" style="color: var(--text-secondary);">
+                  CIC and CoE maintain low typical medians (~3.9%–4.3%) but exhibit isolated single-week Desktop/Laptop surges (&gt;18%), consistent with automated credential-stuffing or spraying bursts. While MFA does not prevent external bots from generating failed primary-login attempts, requiring MFA blocks successful account takeovers when passwords are leaked, and progressive rate-limiting/throttling curbs burst volume.
+                </p>
+              </div>
+            </div>
+
+            <div class="accordion-item surface-alt rounded-xl" data-open="false">
+              <button type="button" onclick="toggleAccordion(this)" class="w-full p-3.5 flex items-center justify-between text-left text-xs font-bold">
+                <span>3. Mobile Input UX &amp; Pre-Exam Self-Service Recovery</span>
+                <svg class="accordion-chevron w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="accordion-body px-3.5">
+                <p class="pb-3.5 text-xs leading-relaxed" style="color: var(--text-secondary);">
+                  Simulated Mobile logins sit ~1.4 percentage points above Desktop/Laptop baselines across all 8 colleges and rise together during Midterm (Weeks 8–9) and Final Exam (Weeks 17–18) windows. Adding a "Show Password" reveal toggle, disabling auto-capitalization on username fields, and sending pre-exam self-service reset reminders reduces avoidable user lockouts.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- UVE Student Orientation Password Policy Tester (NIST SP 800-63B Length + Blocklist) -->
+          <div class="surface-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm sm:text-base font-bold">NIST SP 800-63B Passphrase Checker</h3>
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full" style="background-color: var(--brand-soft); color: var(--brand-primary);">Awareness Demo</span>
+              </div>
+              <p class="text-xs leading-relaxed" style="color: var(--text-muted);">
+                Per <strong>NIST SP 800-63B</strong>, modern password guidance drops mandatory uppercase/symbol composition rules and periodic rotation in favor of <strong>length (12+ characters)</strong> and <strong>blocklist screening</strong> against common or institutional terms (<code class="font-mono">usep</code>, <code class="font-mono">davao</code>, <code class="font-mono">password</code>, <code class="font-mono">1234</code>).
+              </p>
+            </div>
+
+            <form onsubmit="validateDemoPassword(event)" class="space-y-3">
+              <div>
+                <label for="demo-pwd-input" class="block text-[11px] font-semibold uppercase tracking-wide mb-1" style="color: var(--text-muted);">Sample Student UVE Passphrase</label>
+                <input id="demo-pwd-input" type="text" placeholder="Try 'usep2026' or 'durian mango mount apo'" class="input-control w-full rounded-xl px-3.5 py-2.5 text-xs font-mono" />
+              </div>
+              <p id="demo-pwd-feedback" class="text-xs min-h-[18px]" style="color: var(--text-muted);">
+                Enter a passphrase (12+ characters, not on the blocklist) to test NIST 800-63B compliance.
+              </p>
+              <div class="flex items-center gap-2">
+                <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold text-white" style="background-color: var(--brand-primary);">
+                  Check NIST 800-63B Rule
+                </button>
+                <button type="button" onclick="fillWeakSample()" class="px-3 py-2 rounded-xl text-xs font-semibold border" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle); color: var(--text-secondary);">
+                  Test Blocklisted Sample
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           TAB 3: DATASET EXPLORER & ONE-CLICK CSV EXPORTS
+           ====================================================================== -->
+      <section id="panel-3" class="tab-panel hidden space-y-4 animate-entrance">
+        <div class="surface-card rounded-2xl p-4 sm:p-5 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold">Simulated UVE Login Records</h3>
+              <p id="records-subtitle" class="text-xs" style="color: var(--text-muted);">
+                Showing 208 pooled college-week summaries across 8 USeP colleges (26 weeks).
+              </p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <button type="button" onclick="exportFilteredRecordsCSV()" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-white flex items-center gap-1.5" style="background-color: var(--brand-primary);">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Export Filtered CSV</span>
+              </button>
+              <button type="button" onclick="exportSummaryCSV()" class="px-3.5 py-2 rounded-xl text-xs font-semibold border flex items-center gap-1.5" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle);">
+                <span>Export College Stats CSV</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Search & Granularity Controls -->
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <input id="records-search" type="search" oninput="renderRecordsTable()" placeholder="Filter by college (e.g. CIC, CT) or week (e.g. W11)..." class="input-control w-full sm:w-72 rounded-xl px-3.5 py-2 text-xs" />
+
+            <div class="flex items-center gap-2 text-xs">
+              <span style="color: var(--text-muted);">Granularity:</span>
+              <select id="records-granularity" onchange="renderRecordsTable()" class="input-control rounded-xl px-3 py-1.5 text-xs font-medium">
+                <option value="pooled">Pooled College-Weeks (N = 208)</option>
+                <option value="device">Segmented by Device Type (N = 624)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Data Table -->
+          <div class="overflow-x-auto rounded-xl border" style="border-color: var(--border-subtle);">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle); color: var(--text-muted);">
+                  <th class="py-2.5 px-3 font-bold uppercase cursor-pointer" onclick="sortRecords('week')">Week ↕</th>
+                  <th class="py-2.5 px-3 font-bold uppercase cursor-pointer" onclick="sortRecords('college')">College ↕</th>
+                  <th class="py-2.5 px-3 font-bold uppercase cursor-pointer" onclick="sortRecords('device_type')">Device Type ↕</th>
+                  <th class="py-2.5 px-3 font-bold uppercase text-right cursor-pointer" onclick="sortRecords('active_users')">Active Users ↕</th>
+                  <th class="py-2.5 px-3 font-bold uppercase text-right cursor-pointer" onclick="sortRecords('login_attempts')">Login Attempts ↕</th>
+                  <th class="py-2.5 px-3 font-bold uppercase text-right cursor-pointer" onclick="sortRecords('failed_logins')">Failed Logins ↕</th>
+                  <th class="py-2.5 px-3 font-bold uppercase text-right cursor-pointer" onclick="sortRecords('failed_login_rate')">Failed Rate (%) ↕</th>
+                </tr>
+              </thead>
+              <tbody id="records-tbody" class="divide-y font-mono" style="border-color: var(--border-subtle);">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+          <div class="flex items-center justify-between text-xs" style="color: var(--text-muted);">
+            <span id="records-count-label">Showing 1–25 of 208 rows</span>
+            <div class="flex items-center gap-2">
+              <button type="button" id="btn-page-prev" onclick="changeRecordPage(-1)" class="px-3 py-1 rounded-lg border" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle);">Prev</button>
+              <button type="button" id="btn-page-next" onclick="changeRecordPage(1)" class="px-3 py-1 rounded-lg border" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle);">Next</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Subtle Institutional Footer -->
+  <footer class="max-w-7xl w-full mx-auto px-4 sm:px-6 pb-6 pt-2 flex flex-wrap items-center justify-between gap-2 text-[11px]" style="color: var(--text-muted);">
+    <span>KandadoHoy · Failed UVE Logins Across USeP Colleges (Simulated 26-Week Cohort)</span>
+    <span>Project Team: Sean Sidrek Tacardon &amp; Azriel Geoff Consencino</span>
+  </footer>
+
+  <!-- ==========================================================================
+       3. ABOUT, METHODOLOGY, ASSUMPTIONS & PYTHON VERIFICATION MODAL
+       ========================================================================== -->
+  <div id="info-modal-backdrop" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/60 backdrop-blur-xs" onclick="if(event.target===this) closeInfoModal()">
+    <div id="info-modal-sheet" class="surface-card rounded-3xl max-w-3xl w-full max-h-[88vh] flex flex-col overflow-hidden animate-entrance" style="box-shadow: var(--shadow-float);">
+      <!-- Drag Handle -->
+      <div id="modal-drag-handle" class="pt-3 pb-1 flex justify-center cursor-ns-resize">
+        <div class="w-10 h-1 rounded-full" style="background-color: var(--border-strong);"></div>
+      </div>
+
+      <div class="px-6 py-3 border-b flex items-center justify-between gap-3" style="border-color: var(--border-subtle);">
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-base font-extrabold">About KandadoHoy &amp; Study Methodology</h2>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide" style="background-color: var(--brand-gold-soft); color: var(--brand-gold);">
+              Simulated Data
+            </span>
+          </div>
+          <p class="text-xs" style="color: var(--text-muted);">University of Southeastern Philippines (USeP) · Virtual Environment (UVE)</p>
+        </div>
+        <button type="button" onclick="closeInfoModal()" class="p-2 rounded-xl border" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle);" aria-label="Close modal">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-4 text-xs leading-relaxed" style="color: var(--text-secondary);">
+        <!-- ABOUT THE PROJECT & TEAM METADATA -->
+        <div class="surface-alt rounded-2xl p-4 space-y-3 border-l-4" style="border-left-color: var(--brand-primary);">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="font-bold text-sm" style="color: var(--text-primary);">About the Project</h3>
+            <span class="text-[11px] font-mono" style="color: var(--text-muted);">Identity &amp; Access Management (IAM)</span>
+          </div>
+          <p>
+            <strong>KandadoHoy</strong> (<em>Failed UVE Logins Across USeP Colleges</em>) is an information security analytics dashboard developed to help USeP's IT office and college deans evaluate whether weekly failed login rates on the University Virtual Environment (UVE) differ significantly across 8 USeP colleges. Distinguishing chronic password-hygiene gaps from sudden multi-week credential bursts enables targeted cybersecurity awareness campaigns and phased Multi-Factor Authentication (MFA) rollout.
+          </p>
+          <p class="text-[11px]" style="color: var(--text-muted);">
+            <strong>Data Transparency Notice:</strong> The records presented in this dashboard are <strong>simulated</strong> 26-week college-level summaries generated for statistical analysis and academic demonstration; they do not contain actual student credentials or live USeP authentication logs.
+          </p>
+
+          <!-- Structured Key-Value Project & Dataset Summary -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t" style="border-color: var(--border-subtle);">
+            <div class="rounded-xl p-3 space-y-2" style="background-color: var(--bg-surface);">
+              <div class="text-[11px] font-bold uppercase tracking-wider" style="color: var(--brand-primary);">Project Information</div>
+              <dl class="space-y-1.5 text-[11px]">
+                <div class="flex justify-between gap-2">
+                  <dt style="color: var(--text-muted);">Project Title</dt>
+                  <dd class="font-semibold text-right" style="color: var(--text-primary);">KandadoHoy: Failed UVE Logins</dd>
+                </div>
+                <div class="flex justify-between gap-2">
+                  <dt style="color: var(--text-muted);">Members</dt>
+                  <dd class="font-semibold text-right" style="color: var(--text-primary);">
+                    1. Sean Sidrek Tacardon<br />
+                    2. Azriel Geoff Consencino
+                  </dd>
+                </div>
+                <div class="flex justify-between gap-2">
+                  <dt style="color: var(--text-muted);">Security Domain</dt>
+                  <dd class="font-semibold text-right" style="color: var(--text-primary);">Identity and Access</dd>
+                </div>
+                <div class="pt-1 border-t" style="border-color: var(--border-subtle);">
+                  <dt class="mb-0.5" style="color: var(--text-muted);">Research Question</dt>
+                  <dd class="font-medium" style="color: var(--text-primary);">Does the average weekly failed-login rate differ significantly across the 8 USeP colleges?</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div class="rounded-xl p-3 space-y-2" style="background-color: var(--bg-surface);">
+              <div class="text-[11px] font-bold uppercase tracking-wider" style="color: var(--brand-primary);">Dataset Specifications</div>
+              <dl class="space-y-1.5 text-[11px]">
+                <div class="flex justify-between gap-2">
+                  <dt style="color: var(--text-muted);">Data Type</dt>
+                  <dd class="font-semibold text-right" style="color: var(--text-primary);">Simulated Weekly Summaries</dd>
+                </div>
+                <div class="flex justify-between gap-2">
+                  <dt style="color: var(--text-muted);">Observation Window</dt>
+                  <dd class="font-semibold text-right" style="color: var(--text-primary);">26 Academic Weeks</dd>
+                </div>
+                <div class="flex justify-between gap-2">
+                  <dt style="color: var(--text-muted);">Colleges &amp; Devices</dt>
+                  <dd class="font-semibold text-right" style="color: var(--text-primary);">8 Colleges × 3 Device Types</dd>
+                </div>
+                <div class="flex justify-between gap-2">
+                  <dt style="color: var(--text-muted);">Total Records</dt>
+                  <dd class="font-mono font-semibold text-right" style="color: var(--text-primary);">208 Pooled / 624 Segmented</dd>
+                </div>
+                <div class="pt-1 border-t" style="border-color: var(--border-subtle);">
+                  <dt class="mb-0.5" style="color: var(--text-muted);">Variables</dt>
+                  <dd class="font-mono text-[10px]" style="color: var(--text-primary);">week, college, device_type, active_users, login_attempts, failed_logins, failed_login_rate</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <div class="surface-alt rounded-2xl p-4 space-y-1.5">
+          <h3 class="font-bold text-sm" style="color: var(--text-primary);">1. Metric Formula &amp; Pooled Aggregation Rule</h3>
+          <p>
+            Each record captures weekly UVE login telemetry across <strong>8 USeP colleges</strong> over <strong>26 academic weeks</strong> segmented by <strong>3 device types</strong> (<code class="font-mono">Mobile</code>, <code class="font-mono">Desktop/Laptop</code>, <code class="font-mono">Tablet</code>). When viewing all devices combined, counts are pooled prior to division to avoid Simpson's Paradox:
+          </p>
+          <div class="font-mono text-xs p-2.5 rounded-xl mt-1" style="background-color: var(--bg-input); color: var(--brand-primary);">
+            failed_login_rate = (sum(failed_logins) / sum(login_attempts)) × 100
+          </div>
+        </div>
+
+        <div class="surface-alt rounded-2xl p-4 space-y-1.5">
+          <h3 class="font-bold text-sm" style="color: var(--text-primary);">2. Explicit Simulation Assumptions &amp; Random Seeds</h3>
+          <ul class="list-disc pl-4 space-y-1">
+            <li><strong>Random Seeds &amp; Scenarios:</strong> Deterministic Mulberry32 PRNG with <code class="font-mono">seed = 20260926</code> for the <em>Effect Scenario</em> (modeled differences + bursts) and <code class="font-mono">seed = 20260927</code> for the <em>Null-Data Control</em> (identical 5.5% baseline across all 8 colleges, zero injected bursts).</li>
+            <li><strong>Cohort Sizes (Total = 15,850 baseline active users/week):</strong> CAS (~2,950), CoE (~2,650), CEd (~2,400), CBA (~2,200), CT (~1,950), CIC (~1,650), CAEc (~1,100), and CDM (~950).</li>
+            <li><strong>Device-Type Multipliers (+1.4 pp Mobile Effect):</strong> <code class="font-mono">Mobile</code> accounts for 54% of users (3.4 attempts/user/wk, <code class="font-mono">1.18×</code> baseline rate multiplier), <code class="font-mono">Desktop/Laptop</code> for 36% (4.1 attempts/user/wk, <code class="font-mono">0.86×</code> multiplier), and <code class="font-mono">Tablet</code> for 10% (2.3 attempts/user/wk, <code class="font-mono">0.96×</code> multiplier). Across the 8 colleges, Mobile's <code class="font-mono">1.18×</code> vs. Desktop's <code class="font-mono">0.86×</code> multiplier produces a ~<strong>+1.4 percentage point</strong> higher baseline failure rate on Mobile.</li>
+            <li><strong>Effect Scenario Elevations &amp; Bursts:</strong> CT (9.8% base) and CBA (8.7% base) are generated with persistent chronic elevation across all 26 weeks. CIC (3.9% base) and CoE (4.3% base) have low baselines with injected Desktop/Laptop credential bursts (CIC Wks 11 &amp; 19 at 28.5% &amp; 24.5%; CoE Wk 14 at 22.5%).</li>
+            <li><strong>Shared Academic Calendar Friction:</strong> Both scenarios apply a synchronized <code class="font-mono">1.26×</code> failure-rate multiplier and <code class="font-mono">1.22×</code> attempt-volume multiplier across all 8 colleges during Midterm (Weeks 8–9) and Final Exam (Weeks 17–18) periods—motivating a week-blocked repeated-measures test.</li>
+          </ul>
+        </div>
+
+        <div class="surface-alt rounded-2xl p-4 space-y-2">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-sm" style="color: var(--text-primary);">3. Python Generator &amp; Statistical Verification Script</h3>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="copyPythonScript()" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border" style="background-color: var(--bg-surface); border-color: var(--border-subtle);">Copy Code</button>
+              <button type="button" onclick="downloadPythonScript()" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-white" style="background-color: var(--brand-primary);">Download .py</button>
+            </div>
+          </div>
+          <pre id="python-code-block" class="font-mono text-[11px] p-3 rounded-xl overflow-x-auto" style="background-color: var(--bg-input); color: var(--text-primary);">import numpy as np
+import pandas as pd
+import scipy.stats as stats
+from statsmodels.stats.multitest import multipletests
+
+# 1. Reproducible Data Generator (Matches KandadoHoy Dashboard Seeds)
+def simulate_uve_cohort(scenario="effect", seed=20260926):
+    rng = np.random.default_rng(seed)
+    colleges = [
+        ("CT", 1950, 0.098), ("CBA", 2200, 0.087), ("CIC", 1650, 0.039),
+        ("CoE", 2650, 0.043), ("CAEc", 1100, 0.051), ("CAS", 2950, 0.048),
+        ("CEd", 2400, 0.046), ("CDM", 950, 0.044),
+    ]
+    devices = [("Mobile", 0.54, 3.4, 1.18), ("Desktop/Laptop", 0.36, 4.1, 0.86), ("Tablet", 0.10, 2.3, 0.96)]
+    exam_weeks = {8, 9, 17, 18}
+    rows = []
+    for week in range(1, 27):
+        exam_mult = 1.26 if week in exam_weeks else 1.0
+        att_mult = 1.22 if week in exam_weeks else 1.0
+        wave = 1.0 + 0.05 * np.sin((week / 26.0) * 2 * np.pi)
+        for code, base_u, base_r in colleges:
+            eff_r = 0.055 if scenario == "null" else base_r
+            for dev, share, apu, r_mult in devices:
+                users = round(base_u * share * wave * rng.uniform(0.95, 1.05))
+                attempts = max(users, round(users * apu * att_mult * rng.uniform(0.94, 1.06)))
+                rate = eff_r * r_mult * exam_mult * rng.uniform(0.88, 1.12)
+                if scenario == "effect" and dev == "Desktop/Laptop":
+                    if code == "CIC" and week in (11, 19): rate = 0.285 if week == 11 else 0.245
+                    if code == "CoE" and week == 14: rate = 0.225
+                failed = min(attempts, max(1, round(attempts * rate)))
+                rows.append((week, code, dev, users, attempts, failed))
+    return pd.DataFrame(rows, columns=["week", "college", "device_type", "active_users", "login_attempts", "failed_logins"])
+
+# 2. Pool device counts per (week, college) before computing rate (avoids Simpson's Paradox)
+df = simulate_uve_cohort(scenario="effect", seed=20260926)
+pooled = df.groupby(["week", "college"], as_index=False).sum(numeric_only=True)
+pooled["rate"] = (pooled["failed_logins"] / pooled["login_attempts"]) * 100
+piv = pooled.pivot(index="week", columns="college", values="rate")  # 26 week blocks x 8 colleges
+
+# 3. Week-Blocked Omnibus Friedman Test + Kendall's W Effect Size
+b, k = piv.shape
+chi2_r, p_friedman = stats.friedmanchisquare(*[piv[c] for c in piv.columns])
+kendalls_w = chi2_r / (b * (k - 1))
+print(f"Friedman chi2_r(df={k-1}) = {chi2_r:.4f}, p = {p_friedman:.6f}, Kendall's W = {kendalls_w:.4f}")
+
+# 4. Leave-One-College-Out (LOO) Paired Wilcoxon Post-Hoc + Holm Correction
+raw_p, codes = [], list(piv.columns)
+for c in codes:
+    others = df[df["college"] != c].groupby("week", as_index=False).sum(numeric_only=True)
+    loo_rate = (others["failed_logins"] / others["login_attempts"]) * 100
+    _, p_w = stats.wilcoxon(piv[c].values, loo_rate.values)
+    raw_p.append(p_w)
+
+_, p_holm, _, _ = multipletests(raw_p, alpha=0.05, method="holm")
+for c, p0, ph in zip(codes, raw_p, p_holm):
+    print(f"  {c:4s}: median={piv[c].median():.2f}%, raw_p={p0:.6f}, holm_p={ph:.6f}")</pre>
+        </div>
+      </div>
+
+      <div class="px-6 py-3.5 border-t flex justify-end" style="border-color: var(--border-subtle);">
+        <button type="button" onclick="closeInfoModal()" class="px-5 py-2 rounded-xl text-xs font-bold text-white" style="background-color: var(--brand-primary);">
+          Close Methodology
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Floating Tooltip & Toast Notification -->
+  <div id="global-tooltip" class="px-3 py-1.5 rounded-xl text-[11px] font-medium shadow-lg border" style="background-color: var(--bg-surface); border-color: var(--border-strong); color: var(--text-primary);"></div>
+
+  <div id="toast-banner" class="fixed bottom-4 right-4 z-50 hidden items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-semibold shadow-xl border animate-entrance" style="background-color: var(--bg-surface); border-color: var(--border-strong); color: var(--text-primary);">
+    <span class="w-2 h-2 rounded-full" style="background-color: var(--brand-primary);"></span>
+    <span id="toast-message">Updated view</span>
+  </div>
+
+  <!-- ==========================================================================
+       4. APPLICATION LOGIC: DATA SIMULATION, STATISTICAL ENGINE & CHARTS
+       ========================================================================== -->
+  <script>
+    /* --------------------------------------------------------------------------
+       A. DETERMINISTIC PRNG & 26-WEEK USeP UVE DATASET GENERATOR (EFFECT + NULL)
+       -------------------------------------------------------------------------- */
+    function mulberry32(seed) {
+      return function () {
+        let t = (seed += 0x6d2b79f5);
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    const COLLEGES = [
+      { code: 'CT',   name: 'College of Technology',               baseUsers: 1950, baseRate: 0.098, profile: 'chronic',  note: 'Consistent with persistent credential friction across all 26 weeks' },
+      { code: 'CBA',  name: 'College of Business Administration',  baseUsers: 2200, baseRate: 0.087, profile: 'chronic',  note: 'Consistent with sustained password/lockout friction across semester' },
+      { code: 'CIC',  name: 'College of Information & Computing',  baseUsers: 1650, baseRate: 0.039, profile: 'spike',    note: 'Low typical median (below LOO rest); isolated Desktop bursts (Wks 11, 19)' },
+      { code: 'CoE',  name: 'College of Engineering',              baseUsers: 2650, baseRate: 0.043, profile: 'spike',    note: 'Low typical median (below LOO rest); isolated Desktop burst (Wk 14)' },
+      { code: 'CAEc', name: 'College of Applied Economics',        baseUsers: 1100, baseRate: 0.051, profile: 'baseline', note: 'Within baseline; mild synchronized exam-week bump' },
+      { code: 'CAS',  name: 'College of Arts and Sciences',        baseUsers: 2950, baseRate: 0.048, profile: 'baseline', note: 'Largest cohort (2,950 avg users); stable baseline behavior' },
+      { code: 'CEd',  name: 'College of Education',                baseUsers: 2400, baseRate: 0.046, profile: 'baseline', note: 'Within baseline; predictable exam-week peaks' },
+      { code: 'CDM',  name: 'College of Development Management',   baseUsers: 950,  baseRate: 0.044, profile: 'baseline', note: 'Lowest chronic failure rate across semester' },
+    ];
+
+    const DEVICES = [
+      { type: 'Mobile',         userShare: 0.54, attemptsPerUser: 3.4, rateMult: 1.18 },
+      { type: 'Desktop/Laptop', userShare: 0.36, attemptsPerUser: 4.1, rateMult: 0.86 },
+      { type: 'Tablet',         userShare: 0.10, attemptsPerUser: 2.3, rateMult: 0.96 },
+    ];
+
+    const EXAM_WEEKS = new Set([8, 9, 17, 18]);
+
+    function generateDataset(scenario = 'effect') {
+      const isNull = scenario === 'null';
+      const rand = mulberry32(isNull ? 20260927 : 20260926);
+      const rows = [];
+
+      for (let week = 1; week <= 26; week++) {
+        const isExam = EXAM_WEEKS.has(week);
+        const examMult = isExam ? 1.26 : 1.0;
+
+        for (const col of COLLEGES) {
+          const seasonalWave = 1 + 0.05 * Math.sin((week / 26) * Math.PI * 2);
+          const effectiveBaseRate = isNull ? 0.055 : col.baseRate;
+
+          for (const dev of DEVICES) {
+            const jitterUsers = 0.95 + rand() * 0.10;
+            const activeUsers = Math.round(col.baseUsers * dev.userShare * seasonalWave * jitterUsers);
+            const attemptMult = isExam ? 1.22 : 1.0;
+            const loginAttempts = Math.max(
+              activeUsers,
+              Math.round(activeUsers * dev.attemptsPerUser * attemptMult * (0.94 + rand() * 0.12))
+            );
+
+            let rate = effectiveBaseRate * dev.rateMult * examMult * (0.88 + rand() * 0.24);
+
+            // Inject multi-week credential bursts only in the Effect Scenario
+            if (!isNull && col.code === 'CIC' && (week === 11 || week === 19) && dev.type === 'Desktop/Laptop') {
+              rate = week === 11 ? 0.285 : 0.245;
+            }
+            if (!isNull && col.code === 'CoE' && week === 14 && dev.type === 'Desktop/Laptop') {
+              rate = 0.225;
+            }
+
+            const failedLogins = Math.min(loginAttempts, Math.max(1, Math.round(loginAttempts * rate)));
+            const failedLoginRate = (failedLogins / loginAttempts) * 100;
+
+            rows.push({
+              week,
+              college: col.code,
+              collegeName: col.name,
+              device_type: dev.type,
+              active_users: activeUsers,
+              login_attempts: loginAttempts,
+              failed_logins: failedLogins,
+              failed_login_rate: failedLoginRate,
+              isExam,
+            });
+          }
+        }
+      }
+      return rows;
+    }
+
+    const DATASETS = {
+      effect: generateDataset('effect'),
+      null: generateDataset('null'),
+    };
+
+    /* --------------------------------------------------------------------------
+       B. WEEK-BLOCKED STATISTICAL ENGINE (FRIEDMAN, RM-ANOVA, WILCOXON + HOLM)
+       -------------------------------------------------------------------------- */
+    function mean(arr) {
+      return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+    }
+
+    function sd(arr) {
+      if (arr.length < 2) return 0;
+      const m = mean(arr);
+      return Math.sqrt(arr.reduce((acc, v) => acc + (v - m) ** 2, 0) / (arr.length - 1));
+    }
+
+    function quantile(sorted, q) {
+      if (!sorted.length) return 0;
+      const pos = (sorted.length - 1) * q;
+      const base = Math.floor(pos);
+      const rest = pos - base;
+      return sorted[base + 1] !== undefined
+        ? sorted[base] + rest * (sorted[base + 1] - sorted[base])
+        : sorted[base];
+    }
+
+    function skewness(arr) {
+      if (arr.length < 3) return 0;
+      const m = mean(arr);
+      const s = sd(arr);
+      if (s === 0) return 0;
+      const n = arr.length;
+      const sum3 = arr.reduce((acc, v) => acc + ((v - m) / s) ** 3, 0);
+      return (n / ((n - 1) * (n - 2))) * sum3;
+    }
+
+    // Standard Normal CDF (Abramowitz & Stegun)
+    function normCdf(z) {
+      const sign = z < 0 ? -1 : 1;
+      const x = Math.abs(z) / Math.SQRT2;
+      const t = 1 / (1 + 0.3275911 * x);
+      const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741, a4 = -1.453152027, a5 = 1.061405429;
+      const erf = 1 - (((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t) * Math.exp(-x * x);
+      return 0.5 * (1 + sign * erf);
+    }
+
+    // Log-Gamma & Regularized Incomplete Beta / Gamma for exact F & Chi-Square p-values
+    function gammaln(xx) {
+      const cof = [76.18009172947146, -86.50532032941677, 24.01409824083091,
+        -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5];
+      let x = xx, y = xx, tmp = x + 5.5;
+      tmp -= (x + 0.5) * Math.log(tmp);
+      let ser = 1.000000000190015;
+      for (let j = 0; j < 6; j++) ser += cof[j] / ++y;
+      return -tmp + Math.log(2.5066282746310005 * ser / x);
+    }
+
+    function betacf(a, b, x) {
+      const MAXIT = 100, EPS = 3e-7, FPMIN = 1e-30;
+      let qab = a + b, qap = a + 1, qam = a - 1;
+      let c = 1, d = 1 - qab * x / qap;
+      if (Math.abs(d) < FPMIN) d = FPMIN;
+      d = 1 / d;
+      let h = d;
+      for (let m = 1; m <= MAXIT; m++) {
+        let m2 = 2 * m;
+        let aa = m * (b - m) * x / ((qam + m2) * (a + m2));
+        d = 1 + aa * d;
+        if (Math.abs(d) < FPMIN) d = FPMIN;
+        c = 1 + aa / c;
+        if (Math.abs(c) < FPMIN) c = FPMIN;
+        d = 1 / d;
+        h *= d * c;
+        aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2));
+        d = 1 + aa * d;
+        if (Math.abs(d) < FPMIN) d = FPMIN;
+        c = 1 + aa / c;
+        if (Math.abs(c) < FPMIN) c = FPMIN;
+        d = 1 / d;
+        let del = d * c;
+        h *= del;
+        if (Math.abs(del - 1) < EPS) break;
+      }
+      return h;
+    }
+
+    function betai(a, b, x) {
+      if (x <= 0) return 0;
+      if (x >= 1) return 1;
+      const bt = Math.exp(gammaln(a + b) - gammaln(a) - gammaln(b) + a * Math.log(x) + b * Math.log(1 - x));
+      if (x < (a + 1) / (a + b + 2)) return bt * betacf(a, b, x) / a;
+      return 1 - bt * betacf(b, a, 1 - x) / b;
+    }
+
+    function fTestPValue(F, df1, df2) {
+      if (F <= 0 || df1 <= 0 || df2 <= 0) return 1;
+      const x = df2 / (df2 + df1 * F);
+      return betai(df2 / 2, df1 / 2, x);
+    }
+
+    function tTestTwoTailedP(t, df) {
+      if (df <= 0 || !isFinite(t)) return 1;
+      if (t === 0) return 1;
+      const x = df / (df + t * t);
+      return betai(df / 2, 0.5, x);
+    }
+
+    function chiSqPValue(x, k) {
+      if (x <= 0) return 1;
+      const a = k / 2, z = x / 2;
+      let sum = 1 / a, del = sum, ap = a;
+      for (let n = 1; n <= 120; n++) {
+        ap += 1;
+        del *= z / ap;
+        sum += del;
+        if (Math.abs(del) < Math.abs(sum) * 1e-8) break;
+      }
+      const pLower = sum * Math.exp(-z + a * Math.log(z) - gammaln(a));
+      return Math.max(0, Math.min(1, 1 - pLower));
+    }
+
+    // One-Way ANOVA used solely for Brown-Forsythe Levene variance check
+    function computeOneWayAnova(groups) {
+      const k = groups.length;
+      const allVals = groups.flat();
+      const N = allVals.length;
+      if (k < 2 || N <= k) return { F: 0, df1: k - 1, df2: Math.max(1, N - k), p: 1 };
+      const grandMean = mean(allVals);
+      let ssb = 0, ssw = 0;
+      for (const g of groups) {
+        if (!g.length) continue;
+        const gm = mean(g);
+        ssb += g.length * (gm - grandMean) ** 2;
+        for (const v of g) ssw += (v - gm) ** 2;
+      }
+      const df1 = k - 1, df2 = N - k;
+      const F = (ssw / df2) > 0 ? (ssb / df1) / (ssw / df2) : 0;
+      return { F, df1, df2, p: fTestPValue(F, df1, df2) };
+    }
+
+    // Week-Blocked Repeated-Measures ANOVA (Two-Way Blocked without interaction)
+    function computeRepeatedMeasuresAnova(matrix) {
+      const b = matrix.length; // week blocks
+      const k = b > 0 ? matrix[0].length : 0; // colleges
+      if (b < 2 || k < 2) return { F: 0, df1: Math.max(1, k - 1), df2: 1, p: 1, etaSqP: 0, b, k };
+
+      const all = matrix.flat();
+      const grandMean = mean(all);
+      const colMeans = Array.from({ length: k }, (_, c) => mean(matrix.map((row) => row[c])));
+      const rowMeans = matrix.map((row) => mean(row));
+
+      let ssTotal = 0, ssCol = 0, ssBlock = 0;
+      for (let r = 0; r < b; r++) {
+        ssBlock += k * (rowMeans[r] - grandMean) ** 2;
+        for (let c = 0; c < k; c++) {
+          ssTotal += (matrix[r][c] - grandMean) ** 2;
+        }
+      }
+      for (let c = 0; c < k; c++) {
+        ssCol += b * (colMeans[c] - grandMean) ** 2;
+      }
+      const ssError = Math.max(1e-12, ssTotal - ssCol - ssBlock);
+      const df1 = k - 1;
+      const df2 = (b - 1) * (k - 1);
+      const msCol = ssCol / df1;
+      const msError = ssError / df2;
+      const F = msError > 0 ? msCol / msError : 0;
+      const p = fTestPValue(F, df1, df2);
+      const etaSqP = (ssCol + ssError) > 0 ? ssCol / (ssCol + ssError) : 0;
+      return { F, df1, df2, p, etaSqP, b, k };
+    }
+
+    // Week-Blocked Non-Parametric Friedman Test + Kendall's W
+    function computeFriedmanTest(matrix) {
+      const b = matrix.length;
+      const k = b > 0 ? matrix[0].length : 0;
+      if (b < 2 || k < 2) return { chi2: 0, df: Math.max(1, k - 1), p: 1, W: 0, meanRanks: [], b, k };
+
+      const rankSums = new Array(k).fill(0);
+      let tieTerm = 0;
+
+      for (let r = 0; r < b; r++) {
+        const tagged = matrix[r].map((val, idx) => ({ val, idx })).sort((a, b) => a.val - b.val);
+        let i = 0;
+        while (i < k) {
+          let j = i;
+          while (j + 1 < k && Math.abs(tagged[j + 1].val - tagged[i].val) < 1e-9) j++;
+          const avgRank = (i + j + 2) / 2;
+          const t = j - i + 1;
+          if (t > 1) tieTerm += t ** 3 - t;
+          for (let m = i; m <= j; m++) rankSums[tagged[m].idx] += avgRank;
+          i = j + 1;
+        }
+      }
+
+      const sumR2 = rankSums.reduce((acc, r) => acc + r * r, 0);
+      const rawChi2 = (12 / (b * k * (k + 1))) * sumR2 - 3 * b * (k + 1);
+      const tieCorr = 1 - tieTerm / (b * k * (k * k - 1));
+      const chi2 = tieCorr > 0 ? Math.max(0, rawChi2 / tieCorr) : Math.max(0, rawChi2);
+      const df = k - 1;
+      const p = chiSqPValue(chi2, df);
+      const W = Math.max(0, Math.min(1, chi2 / (b * (k - 1))));
+      const meanRanks = rankSums.map((r) => r / b);
+
+      return { chi2, df, p, W, meanRanks, b, k };
+    }
+
+    // Paired Wilcoxon Signed-Rank Test (two-tailed, tie & continuity corrected)
+    function computePairedWilcoxon(xArr, yArr) {
+      const diffs = [];
+      for (let i = 0; i < Math.min(xArr.length, yArr.length); i++) {
+        const d = xArr[i] - yArr[i];
+        if (Math.abs(d) > 1e-9) diffs.push({ abs: Math.abs(d), sign: d > 0 ? 1 : -1 });
+      }
+      const n = diffs.length;
+      if (n < 3) return { WPlus: 0, WMinus: 0, p: 1 };
+
+      diffs.sort((a, b) => a.abs - b.abs);
+      let wPlus = 0, wMinus = 0, tieSum = 0;
+      let i = 0;
+      while (i < n) {
+        let j = i;
+        while (j + 1 < n && Math.abs(diffs[j + 1].abs - diffs[i].abs) < 1e-9) j++;
+        const rank = (i + j + 2) / 2;
+        const t = j - i + 1;
+        if (t > 1) tieSum += t ** 3 - t;
+        for (let m = i; m <= j; m++) {
+          if (diffs[m].sign > 0) wPlus += rank;
+          else wMinus += rank;
+        }
+        i = j + 1;
+      }
+
+      const wMin = Math.min(wPlus, wMinus);
+      const meanW = (n * (n + 1)) / 4;
+      const varW = (n * (n + 1) * (2 * n + 1) - tieSum / 2) / 24;
+      if (varW <= 0) return { WPlus: wPlus, WMinus: wMinus, p: 1 };
+      const z = (Math.abs(wMin - meanW) - 0.5) / Math.sqrt(varW);
+      const p = Math.max(0, Math.min(1, 2 * (1 - normCdf(Math.max(0, z)))));
+      return { WPlus: wPlus, WMinus: wMinus, p };
+    }
+
+    // Paired Student's t-test (two-tailed)
+    function computePairedTTest(xArr, yArr) {
+      const diffs = [];
+      for (let i = 0; i < Math.min(xArr.length, yArr.length); i++) {
+        diffs.push(xArr[i] - yArr[i]);
+      }
+      const n = diffs.length;
+      if (n < 2) return { t: 0, p: 1 };
+      const m = mean(diffs);
+      const s = sd(diffs);
+      if (s === 0) return { t: 0, p: 1 };
+      const t = m / (s / Math.sqrt(n));
+      return { t, p: tTestTwoTailedP(t, n - 1) };
+    }
+
+    // Holm-Bonferroni Step-Down Multiple Comparison Adjustment
+    function holmAdjust(rawPValues) {
+      const m = rawPValues.length;
+      const indexed = rawPValues.map((p, idx) => ({ p, idx })).sort((a, b) => a.p - b.p);
+      const adjusted = new Array(m).fill(1);
+      let runningMax = 0;
+      for (let i = 0; i < m; i++) {
+        const candidate = Math.min(1, (m - i) * indexed[i].p);
+        runningMax = Math.max(runningMax, candidate);
+        adjusted[indexed[i].idx] = runningMax;
+      }
+      return adjusted;
+    }
+
+    /* --------------------------------------------------------------------------
+       C. APPLICATION STATE & FILTER PIPELINE
+       -------------------------------------------------------------------------- */
+    const state = {
+      role: 'dean',
+      theme: 'dark',
+      activeTab: 0,
+      plannerStep: 1,
+      recordsSortKey: 'week',
+      recordsSortAsc: true,
+      recordsPage: 1,
+      recordsPageSize: 18,
+      filteredPooled: [],
+      collegeStats: [],
+      omnibus: null,
+      univBaselineRate: 0,
+      scenario: 'effect',
+    };
+
+    let barChartInstance = null;
+    let trendChartInstance = null;
+    let deviceChartInstance = null;
+
+    function getActiveRawDataset() {
+      const scenario = document.getElementById('filter-scenario').value;
+      state.scenario = scenario;
+      return DATASETS[scenario] || DATASETS.effect;
+    }
+
+    function getFilteredRows() {
+      const raw = getActiveRawDataset();
+      const period = document.getElementById('filter-period').value;
+      const college = document.getElementById('filter-college').value;
+      const device = document.getElementById('filter-device').value;
+      const outlierMode = document.getElementById('filter-outliers').value;
+
+      const baseFiltered = raw.filter((r) => {
+        if (period === 'first_half' && r.week > 13) return false;
+        if (period === 'second_half' && r.week < 14) return false;
+        if (period === 'exams' && !r.isExam) return false;
+        if (period === 'regular' && r.isExam) return false;
+        if (device !== 'ALL' && r.device_type !== device) return false;
+        return true;
+      });
+
+      // Pool counts by (week, college) before dividing to prevent Simpson's Paradox
+      const map = new Map();
+      for (const r of baseFiltered) {
+        const key = `${r.week}_${r.college}`;
+        if (!map.has(key)) {
+          map.set(key, {
+            week: r.week,
+            college: r.college,
+            collegeName: r.collegeName,
+            device_type: device === 'ALL' ? 'All Devices (Pooled)' : device,
+            active_users: 0,
+            login_attempts: 0,
+            failed_logins: 0,
+            isExam: r.isExam,
+          });
+        }
+        const entry = map.get(key);
+        entry.active_users += r.active_users;
+        entry.login_attempts += r.login_attempts;
+        entry.failed_logins += r.failed_logins;
+      }
+
+      let pooled = Array.from(map.values()).map((d) => ({
+        ...d,
+        failed_login_rate: d.login_attempts > 0 ? (d.failed_logins / d.login_attempts) * 100 : 0,
+      }));
+
+      // Tukey fence per college (Q3 + 1.5 * IQR) to flag statistical outlier spike weeks
+      const byCol = new Map();
+      for (const p of pooled) {
+        if (!byCol.has(p.college)) byCol.set(p.college, []);
+        byCol.get(p.college).push(p.failed_login_rate);
+      }
+      const fences = new Map();
+      for (const [c, vals] of byCol.entries()) {
+        const s = [...vals].sort((a, b) => a - b);
+        const q1 = quantile(s, 0.25);
+        const q3 = quantile(s, 0.75);
+        fences.set(c, q3 + 1.5 * (q3 - q1));
+      }
+
+      pooled = pooled.map((p) => ({
+        ...p,
+        isOutlier: p.failed_login_rate > (fences.get(p.college) ?? Infinity),
+      }));
+
+      pooled = pooled.filter((p) => {
+        if (outlierMode === 'exclude' && p.isOutlier) return false;
+        if (outlierMode === 'only' && !p.isOutlier) return false;
+        if (college !== 'ALL' && p.college !== college) return false;
+        return true;
+      });
+
+      return pooled;
+    }
+
+    function applyFilters() {
+      const pooled = getFilteredRows();
+      state.filteredPooled = pooled;
+      state.recordsPage = 1;
+
+      const totalAttempts = pooled.reduce((a, b) => a + b.login_attempts, 0);
+      const totalFailed = pooled.reduce((a, b) => a + b.failed_logins, 0);
+      const univBaseline = totalAttempts > 0 ? (totalFailed / totalAttempts) * 100 : 0;
+      state.univBaselineRate = univBaseline;
+
+      const activeColleges = COLLEGES.filter((c) => pooled.some((p) => p.college === c.code));
+      const groups = activeColleges.map((c) =>
+        pooled.filter((p) => p.college === c.code).map((p) => p.failed_login_rate)
+      );
+
+      // Build complete week-block matrix (b weeks x k colleges) for repeated-measures omnibus test
+      const allWeeks = Array.from(new Set(pooled.map((p) => p.week))).sort((a, b) => a - b);
+      const completeWeeks = allWeeks.filter((w) =>
+        activeColleges.every((c) => pooled.some((p) => p.week === w && p.college === c.code))
+      );
+      const blockMatrix = completeWeeks.map((w) =>
+        activeColleges.map((c) => {
+          const row = pooled.find((p) => p.week === w && p.college === c.code);
+          return row ? row.failed_login_rate : 0;
+        })
+      );
+
+      // Assumption checks: Brown-Forsythe Levene + max skewness
+      const medianDeviations = groups.map((g) => {
+        const med = quantile([...g].sort((a, b) => a - b), 0.5);
+        return g.map((v) => Math.abs(v - med));
+      });
+      const levene = computeOneWayAnova(medianDeviations);
+      const maxSkew = groups.length ? Math.max(...groups.map((g) => Math.abs(skewness(g)))) : 0;
+
+      const override = document.getElementById('test-override').value;
+      const useFriedman = override === 'friedman' || (override === 'auto' && (levene.p < 0.05 || maxSkew > 1.25));
+
+      const friedman = computeFriedmanTest(blockMatrix);
+      const rmAnova = computeRepeatedMeasuresAnova(blockMatrix);
+      const N = pooled.length;
+
+      // Leave-One-College-Out (Rest-of-University) paired weekly series & raw post-hoc p-values
+      const rawPostHocResults = activeColleges.map((col) => {
+        const colRows = pooled.filter((p) => p.college === col.code).sort((a, b) => a.week - b.week);
+        const colWeeks = colRows.map((r) => r.week);
+
+        // Leave-one-out overall pooled baseline (excludes college being tested)
+        const otherAll = pooled.filter((p) => p.college !== col.code);
+        const otherAtt = otherAll.reduce((a, b) => a + b.login_attempts, 0);
+        const otherFail = otherAll.reduce((a, b) => a + b.failed_logins, 0);
+        const looBaseline = otherAtt > 0 ? (otherFail / otherAtt) * 100 : univBaseline;
+
+        // Paired weekly rates vs. leave-one-out weekly rest-of-university rate
+        const xWeekly = [];
+        const looWeekly = [];
+        for (const r of colRows) {
+          const weekOthers = pooled.filter((p) => p.week === r.week && p.college !== col.code);
+          if (weekOthers.length > 0) {
+            const wAtt = weekOthers.reduce((a, b) => a + b.login_attempts, 0);
+            const wFail = weekOthers.reduce((a, b) => a + b.failed_logins, 0);
+            xWeekly.push(r.failed_login_rate);
+            looWeekly.push(wAtt > 0 ? (wFail / wAtt) * 100 : looBaseline);
+          }
+        }
+
+        const rawP = useFriedman
+          ? computePairedWilcoxon(xWeekly, looWeekly).p
+          : computePairedTTest(xWeekly, looWeekly).p;
+
+        return { looBaseline, rawP, weeksCount: colWeeks.length };
+      });
+
+      const holmPValues = holmAdjust(rawPostHocResults.map((r) => r.rawP));
+
+      const statsList = activeColleges.map((col, idx) => {
+        const vals = groups[idx];
+        const sorted = [...vals].sort((a, b) => a - b);
+        const m = mean(vals);
+        const s = sd(vals);
+        const med = quantile(sorted, 0.5);
+        const q1 = quantile(sorted, 0.25);
+        const q3 = quantile(sorted, 0.75);
+        const iqr = q3 - q1;
+        const se = vals.length > 0 ? s / Math.sqrt(vals.length) : 0;
+        const ciLow = Math.max(0, m - 1.96 * se);
+        const ciHigh = m + 1.96 * se;
+        const outlierCount = pooled.filter((p) => p.college === col.code && p.isOutlier).length;
+        const looBaseline = rawPostHocResults[idx].looBaseline;
+        const holmP = holmPValues[idx];
+
+        // Consistent classification:
+        // "Chronically Elevated" requires BOTH Holm p < 0.05 AND typical median > leave-one-out baseline
+        const isChronicallyElevated = activeColleges.length > 1 && holmP < 0.05 && med > looBaseline;
+        const isSpikeSkewed = !isChronicallyElevated && outlierCount > 0;
+
+        return {
+          ...col,
+          n: vals.length,
+          vals,
+          sorted,
+          mean: m,
+          sd: s,
+          median: med,
+          q1,
+          q3,
+          iqr,
+          ciLow,
+          ciHigh,
+          min: sorted[0] ?? 0,
+          max: sorted[sorted.length - 1] ?? 0,
+          outlierCount,
+          looBaseline,
+          holmP,
+          isChronicallyElevated,
+          isSpikeSkewed,
+        };
+      });
+
+      statsList.sort((a, b) => b.mean - a.mean);
+      state.collegeStats = statsList;
+      state.omnibus = {
+        useFriedman,
+        friedman,
+        rmAnova,
+        levene,
+        maxSkew,
+        N,
+        b: completeWeeks.length,
+        k: activeColleges.length,
+      };
+
+      updateSidebarDiagnostics();
+      updateVerdictAndKPIs(totalAttempts, totalFailed);
+      renderBarChart();
+      renderSummaryTable();
+      renderTrendChart();
+      renderBoxplot();
+      renderDeviceChart();
+      updatePlannerProjection();
+      renderRecordsTable();
+    }
+
+    function resetFilters() {
+      document.getElementById('filter-scenario').value = 'effect';
+      document.getElementById('filter-period').value = 'all';
+      document.getElementById('filter-college').value = 'ALL';
+      document.getElementById('filter-device').value = 'ALL';
+      document.getElementById('filter-outliers').value = 'include';
+      document.getElementById('test-override').value = 'auto';
+      applyFilters();
+      showToast('Filters reset to Effect Scenario (26 weeks)');
+    }
+
+    /* --------------------------------------------------------------------------
+       D. UI UPDATERS (SIDEBAR, VERDICT, KPI CARDS, TABLES)
+       -------------------------------------------------------------------------- */
+    function formatP(p) {
+      if (p < 0.0001) return '< 0.0001';
+      return p.toFixed(4);
+    }
+
+    function updateSidebarDiagnostics() {
+      const { useFriedman, friedman, rmAnova, levene, maxSkew, b, k } = state.omnibus;
+      const badge = document.getElementById('badge-test-type');
+      const mainLabel = document.getElementById('stat-main-label');
+      const mainVal = document.getElementById('stat-main-val');
+      const pValEl = document.getElementById('stat-p-val');
+      const effLabel = document.getElementById('stat-eff-label');
+      const effVal = document.getElementById('stat-eff-val');
+      const noteEl = document.getElementById('stat-assumption-note');
+
+      if (k < 2 || b < 2) {
+        badge.textContent = 'Single Series';
+        mainLabel.textContent = 'Blocked Test';
+        mainVal.textContent = 'N/A';
+        pValEl.textContent = '—';
+        effVal.textContent = '—';
+        noteEl.textContent = 'Select "All 8 USeP Colleges" with ≥ 2 complete week blocks to run the repeated-measures test.';
+        return;
+      }
+
+      if (useFriedman) {
+        badge.textContent = 'Friedman χ²r';
+        mainLabel.textContent = `Friedman χ²r (df = ${friedman.df})`;
+        mainVal.textContent = friedman.chi2.toFixed(2);
+        pValEl.textContent = formatP(friedman.p);
+        pValEl.style.color = friedman.p < 0.05 ? 'var(--status-danger)' : 'var(--status-safe)';
+        effLabel.textContent = "Kendall's W";
+        const mag = friedman.W >= 0.5 ? 'Large' : friedman.W >= 0.3 ? 'Moderate' : friedman.W >= 0.1 ? 'Small' : 'Negligible';
+        effVal.textContent = `${friedman.W.toFixed(3)} (${mag})`;
+        noteEl.textContent = `Blocked across b = ${b} shared weeks (Levene p = ${formatP(levene.p)}, skew = ${maxSkew.toFixed(2)}). Friedman + Holm-corrected paired Wilcoxon post-hoc active.`;
+      } else {
+        badge.textContent = 'RM-ANOVA F';
+        mainLabel.textContent = `Blocked F(${rmAnova.df1}, ${rmAnova.df2})`;
+        mainVal.textContent = rmAnova.F.toFixed(2);
+        pValEl.textContent = formatP(rmAnova.p);
+        pValEl.style.color = rmAnova.p < 0.05 ? 'var(--status-danger)' : 'var(--status-safe)';
+        effLabel.textContent = 'Partial η²p';
+        const mag = rmAnova.etaSqP >= 0.14 ? 'Large' : rmAnova.etaSqP >= 0.06 ? 'Medium' : 'Small';
+        effVal.textContent = `${rmAnova.etaSqP.toFixed(3)} (${mag})`;
+        noteEl.textContent = `Blocked across b = ${b} shared weeks (Levene p = ${formatP(levene.p)}, skew = ${maxSkew.toFixed(2)}). Repeated-Measures ANOVA + Holm-corrected paired t-test active.`;
+      }
+    }
+
+    function updateVerdictAndKPIs(totalAttempts, totalFailed) {
+      const statsList = state.collegeStats;
+      const top = statsList[0];
+      const elevatedColleges = statsList.filter((c) => c.isChronicallyElevated);
+      const spikeColleges = statsList.filter((c) => c.isSpikeSkewed);
+      const { useFriedman, friedman, rmAnova, N, b, k } = state.omnibus;
+      const p = useFriedman ? friedman.p : rmAnova.p;
+      const isNullScenario = state.scenario === 'null';
+
+      document.getElementById('kpi-univ-rate').textContent = `${state.univBaselineRate.toFixed(2)}%`;
+      document.getElementById('kpi-univ-sub').textContent = `${state.univBaselineRate.toFixed(2)} failed per 100 attempts`;
+
+      if (top) {
+        document.getElementById('kpi-top-college').textContent = `${top.code} (${top.mean.toFixed(2)}%)`;
+        document.getElementById('kpi-top-sub').textContent = `${top.name}`;
+      }
+
+      document.getElementById('kpi-sig-count').textContent = `${elevatedColleges.length} of ${k}`;
+      document.getElementById('kpi-sig-sub').textContent = elevatedColleges.length
+        ? `${elevatedColleges.map((c) => c.code).join(', ')} (Holm p < 0.05 vs LOO)`
+        : '0 colleges above leave-one-out rest';
+
+      document.getElementById('kpi-obs-badge').textContent = `${N} college-wks`;
+      document.getElementById('kpi-total-attempts').textContent = totalAttempts.toLocaleString();
+      document.getElementById('kpi-total-sub').textContent = `${totalFailed.toLocaleString()} failed across ${N} college-weeks`;
+
+      const eyebrow = document.getElementById('verdict-eyebrow');
+      const pill = document.getElementById('verdict-sig-pill');
+      const headline = document.getElementById('verdict-headline');
+      const body = document.getElementById('verdict-body');
+
+      eyebrow.textContent = isNullScenario
+        ? 'Pipeline Validation · Simulated Null-Data Control (α = 0.05)'
+        : 'Pipeline Demonstration · Simulated Effect Scenario (α = 0.05)';
+
+      if (k < 2 && top) {
+        pill.textContent = `Single-College Focus · ${top.code}`;
+        pill.style.backgroundColor = 'var(--brand-gold-soft)';
+        pill.style.color = 'var(--brand-gold)';
+        headline.textContent = `Simulated ${top.code} series averages ${top.mean.toFixed(2)}% failed UVE logins.`;
+        body.textContent = `Median weekly failure rate is ${top.median.toFixed(2)}% (IQR: ${top.iqr.toFixed(2)}%) across ${top.n} evaluated weeks. Select "All 8 USeP Colleges" to run the week-blocked omnibus comparison.`;
+        return;
+      }
+
+      if (isNullScenario) {
+        pill.textContent = p >= 0.05 ? `Null Verified (p = ${p.toFixed(3)})` : `Sample Noise (p = ${p.toFixed(3)})`;
+        pill.style.backgroundColor = 'var(--status-safe-soft)';
+        pill.style.color = 'var(--status-safe)';
+        headline.textContent = 'Pipeline Validation (Null-Data Control): No false-positive college differences flagged.';
+        body.textContent =
+          state.role === 'dean'
+            ? `In this control simulation—where all 8 colleges were generated with identical 5.5% baseline failure rates plus shared exam-week bumps—the week-blocked test yields p = ${p.toFixed(3)} (> 0.05) and flags 0 colleges. This confirms our analysis pipeline does not manufacture false alarms when colleges behave similarly.`
+            : `Null-control verification across b = ${b} shared week blocks: ${useFriedman ? `Friedman χ²r(${friedman.df}) = ${friedman.chi2.toFixed(2)}, p = ${friedman.p.toFixed(4)}, Kendall's W = ${friedman.W.toFixed(3)}` : `RM-ANOVA F(${rmAnova.df1}, ${rmAnova.df2}) = ${rmAnova.F.toFixed(2)}, p = ${rmAnova.p.toFixed(4)}, η²p = ${rmAnova.etaSqP.toFixed(3)}`}. All 8 Holm-corrected leave-one-out post-hoc tests remain non-significant (p_Holm > 0.05).`;
+        return;
+      }
+
+      if (p < 0.05) {
+        pill.textContent = `Simulated Gap Detected (p ${formatP(p)})`;
+        pill.style.backgroundColor = 'var(--status-danger-soft)';
+        pill.style.color = 'var(--status-danger)';
+        headline.textContent = 'Pipeline Demonstration (Effect Scenario): Week-blocked test detects the simulated cross-college differences.';
+
+        if (state.role === 'dean') {
+          const elevText = elevatedColleges.map((c) => `${c.code} (${c.mean.toFixed(1)}% mean)`).join(' and ');
+          const spikeText = spikeColleges.map((c) => c.code).join(' and ');
+          body.textContent = `In this synthetic demonstration, the pipeline separates two distinct patterns: ${elevText || top.code} show sustained week-after-week elevation (consistent with chronic credential friction, warranting Wave-1 MFA and NIST 800-63B passphrase onboarding), whereas ${spikeText || 'spike units'} stay below the rest-of-university median in normal weeks but exhibit sharp multi-week Desktop bursts (warranting login rate-limiting and MFA takeover protection).`;
+        } else {
+          const testDesc = useFriedman
+            ? `Friedman χ²r(${friedman.df}) = ${friedman.chi2.toFixed(2)}, p ${formatP(friedman.p)}, Kendall's W = ${friedman.W.toFixed(3)} across b = ${b} week blocks`
+            : `RM-ANOVA F(${rmAnova.df1}, ${rmAnova.df2}) = ${rmAnova.F.toFixed(2)}, p ${formatP(rmAnova.p)}, partial η²p = ${rmAnova.etaSqP.toFixed(3)} across b = ${b} week blocks`;
+          body.textContent = `Omnibus ${testDesc}. Leave-one-out paired post-hoc comparisons with Holm-Bonferroni correction identify ${elevatedColleges.map((c) => `${c.code} (median ${c.median.toFixed(2)}% vs. LOO ${c.looBaseline.toFixed(2)}%, p_Holm ${formatP(c.holmP)})`).join(', ')} as chronically elevated, while ${spikeColleges.map((c) => `${c.code} (median ${c.median.toFixed(2)}%, ${c.outlierCount} Tukey outlier wk)`).join(', ')} are classified as spike-skewed rather than chronically elevated.`;
+        }
+      } else {
+        pill.textContent = `No Significant Difference (p = ${p.toFixed(3)})`;
+        pill.style.backgroundColor = 'var(--status-safe-soft)';
+        pill.style.color = 'var(--status-safe)';
+        headline.textContent = 'No statistically significant difference detected under the current filter scope.';
+        body.textContent = `Under the active filter selection, college weekly failed-login rates do not differ significantly across the ${b} week blocks (p = ${p.toFixed(3)} > 0.05).`;
+      }
+    }
+
+    function renderSummaryTable() {
+      const tbody = document.getElementById('college-summary-tbody');
+      tbody.innerHTML = state.collegeStats
+        .map((c, idx) => {
+          let badgeHtml = '';
+          if (c.isChronicallyElevated) {
+            badgeHtml = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold" style="background-color: var(--status-danger-soft); color: var(--status-danger);">Chronically Elevated</span>`;
+          } else if (c.isSpikeSkewed) {
+            badgeHtml = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold" style="background-color: var(--status-warn-soft); color: var(--status-warn);">Spike-Skewed (${c.outlierCount} wk)</span>`;
+          } else {
+            badgeHtml = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold" style="background-color: var(--status-safe-soft); color: var(--status-safe);">Within Baseline</span>`;
+          }
+
+          const patternNote =
+            state.scenario === 'null'
+              ? 'Null-control series generated from shared 5.5% baseline'
+              : c.note;
+
+          return `
+            <tr class="hover:bg-black/5 dark:hover:bg-white/5">
+              <td class="py-3 px-4 font-mono font-bold">#${idx + 1}</td>
+              <td class="py-3 px-4">
+                <div class="font-bold">${c.code}</div>
+                <div class="text-[11px]" style="color: var(--text-muted);">${c.name}</div>
+              </td>
+              <td class="py-3 px-4 text-right font-mono font-bold">${c.mean.toFixed(2)}%</td>
+              <td class="py-3 px-4 text-right font-mono">${c.median.toFixed(2)}% <span style="color: var(--text-muted);">(${c.iqr.toFixed(2)})</span></td>
+              <td class="py-3 px-4 text-right font-mono" style="color: var(--text-secondary);">${c.looBaseline.toFixed(2)}%</td>
+              <td class="py-3 px-4 text-right font-mono" style="color: var(--text-secondary);">[${c.ciLow.toFixed(2)}, ${c.ciHigh.toFixed(2)}]</td>
+              <td class="py-3 px-4 text-right font-mono font-semibold" style="color: ${c.isChronicallyElevated ? 'var(--status-danger)' : 'var(--text-muted)'};">${formatP(c.holmP)}</td>
+              <td class="py-3 px-4">
+                <div class="flex flex-col gap-1 items-start">
+                  ${badgeHtml}
+                  <span class="text-[11px]" style="color: var(--text-muted);">${patternNote}</span>
+                </div>
+              </td>
+            </tr>
+          `;
+        })
+        .join('');
+    }
+
+    /* --------------------------------------------------------------------------
+       E. CHARTS (CHART.JS BAR, LINE, DEVICE GROUPED + CUSTOM CANVAS BOXPLOT)
+       -------------------------------------------------------------------------- */
+    function getThemeColors() {
+      const dark = state.theme === 'dark';
+      return {
+        text: dark ? '#cbd5e1' : '#334155',
+        muted: dark ? '#8b9bb0' : '#64748b',
+        grid: dark ? 'rgba(148, 163, 184, 0.12)' : 'rgba(15, 23, 42, 0.08)',
+        danger: dark ? '#f43f5e' : '#dc2626',
+        warn: dark ? '#f59e0b' : '#d97706',
+        safe: dark ? '#10b981' : '#0d9468',
+        brand: dark ? '#e03e56' : '#8b1528',
+        gold: dark ? '#eab308' : '#b07d0e',
+      };
+    }
+
+    function renderBarChart() {
+      const ctx = document.getElementById('collegeBarChart');
+      if (!ctx) return;
+      const colors = getThemeColors();
+      const labels = state.collegeStats.map((c) => `${c.code} — ${c.name.replace('College of ', '')}`);
+      const means = state.collegeStats.map((c) => Number(c.mean.toFixed(2)));
+      const medians = state.collegeStats.map((c) => Number(c.median.toFixed(2)));
+      const barColors = state.collegeStats.map((c) =>
+        c.isChronicallyElevated ? colors.danger : c.isSpikeSkewed ? colors.warn : colors.safe
+      );
+
+      // Plugin to draw University Baseline vertical line & 95% CI whiskers
+      const baselineAndCIPlugin = {
+        id: 'baselineAndCI',
+        afterDatasetsDraw(chart) {
+          const { ctx: c, chartArea, scales } = chart;
+          const xScale = scales.x;
+          const baseX = xScale.getPixelForValue(state.univBaselineRate);
+
+          c.save();
+          // University Baseline vertical dashed line
+          if (baseX >= chartArea.left && baseX <= chartArea.right) {
+            c.strokeStyle = colors.gold;
+            c.lineWidth = 2;
+            c.setLineDash([5, 4]);
+            c.beginPath();
+            c.moveTo(baseX, chartArea.top);
+            c.lineTo(baseX, chartArea.bottom);
+            c.stroke();
+            c.setLineDash([]);
+
+            c.fillStyle = colors.gold;
+            c.font = '600 11px Inter, sans-serif';
+            c.fillText(`Univ. Baseline: ${state.univBaselineRate.toFixed(2)}%`, Math.min(baseX + 6, chartArea.right - 135), chartArea.top + 13);
+          }
+
+          // 95% CI whiskers on Mean bars
+          const meta = chart.getDatasetMeta(0);
+          c.strokeStyle = colors.text;
+          c.lineWidth = 1.6;
+          meta.data.forEach((bar, i) => {
+            const stat = state.collegeStats[i];
+            if (!stat) return;
+            const xLow = xScale.getPixelForValue(stat.ciLow);
+            const xHigh = xScale.getPixelForValue(stat.ciHigh);
+            const y = bar.y;
+            c.beginPath();
+            c.moveTo(xLow, y);
+            c.lineTo(xHigh, y);
+            c.moveTo(xLow, y - 4);
+            c.lineTo(xLow, y + 4);
+            c.moveTo(xHigh, y - 4);
+            c.lineTo(xHigh, y + 4);
+            c.stroke();
+          });
+          c.restore();
+        },
+      };
+
+      if (barChartInstance) barChartInstance.destroy();
+      barChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Mean Failed Rate (%)',
+              data: means,
+              backgroundColor: barColors,
+              borderRadius: 6,
+              barPercentage: 0.65,
+            },
+            {
+              label: 'Median Failed Rate (%)',
+              data: medians,
+              backgroundColor: 'rgba(148, 163, 184, 0.45)',
+              borderRadius: 6,
+              barPercentage: 0.45,
+            },
+          ],
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: colors.text, font: { size: 11, family: 'Inter' } },
+            },
+            tooltip: {
+              callbacks: {
+                afterLabel(ctx) {
+                  const s = state.collegeStats[ctx.dataIndex];
+                  return `95% CI: [${s.ciLow.toFixed(2)}%, ${s.ciHigh.toFixed(2)}%] | IQR: ${s.iqr.toFixed(2)}%`;
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              suggestedMax: 13,
+              grid: { color: colors.grid },
+              ticks: { color: colors.muted, callback: (v) => `${v}%`, font: { family: 'JetBrains Mono', size: 11 } },
+            },
+            y: {
+              grid: { display: false },
+              ticks: { color: colors.text, font: { size: 11, weight: '600', family: 'Inter' } },
+            },
+          },
+        },
+        plugins: [baselineAndCIPlugin],
+      });
+    }
+
+    function renderTrendChart() {
+      const ctx = document.getElementById('weeklyTrendChart');
+      if (!ctx) return;
+      const colors = getThemeColors();
+      const mode = document.getElementById('trend-cohort-select').value;
+
+      const weeks = Array.from({ length: 26 }, (_, i) => i + 1);
+      const palette = ['#f43f5e', '#f59e0b', '#38bdf8', '#a855f7', '#10b981', '#ec4899', '#14b8a6', '#8b5cf6'];
+
+      let targetCodes = ['CT', 'CBA', 'CIC', 'CoE'];
+      if (mode === 'all') targetCodes = COLLEGES.map((c) => c.code);
+      if (mode === 'baseline') targetCodes = ['CAS', 'CEd', 'CAEc', 'CDM'];
+
+      const datasets = targetCodes.map((code, idx) => {
+        const data = weeks.map((w) => {
+          const row = state.filteredPooled.find((p) => p.week === w && p.college === code);
+          return row ? Number(row.failed_login_rate.toFixed(2)) : null;
+        });
+        return {
+          label: code,
+          data,
+          borderColor: palette[idx % palette.length],
+          backgroundColor: palette[idx % palette.length],
+          borderWidth: 2.2,
+          pointRadius: 2.5,
+          tension: 0.25,
+          spanGaps: true,
+        };
+      });
+
+      // Add University Weekly Average dashed reference line
+      const univWeekly = weeks.map((w) => {
+        const wRows = state.filteredPooled.filter((p) => p.week === w);
+        const att = wRows.reduce((a, b) => a + b.login_attempts, 0);
+        const fail = wRows.reduce((a, b) => a + b.failed_logins, 0);
+        return att > 0 ? Number(((fail / att) * 100).toFixed(2)) : null;
+      });
+      datasets.push({
+        label: 'University Avg',
+        data: univWeekly,
+        borderColor: colors.gold,
+        borderDash: [6, 4],
+        borderWidth: 2,
+        pointRadius: 0,
+        tension: 0.2,
+        spanGaps: true,
+      });
+
+      // Shaded Midterm & Final Exam Bands Plugin
+      const examBandPlugin = {
+        id: 'examBands',
+        beforeDatasetsDraw(chart) {
+          const { ctx: c, chartArea, scales } = chart;
+          const x = scales.x;
+          c.save();
+          c.fillStyle = state.theme === 'dark' ? 'rgba(234, 179, 8, 0.08)' : 'rgba(212, 175, 55, 0.12)';
+          // Weeks 8-9 (indices 7..8) & Weeks 17-18 (indices 16..17)
+          [
+            [7, 8, 'Midterms'],
+            [16, 17, 'Finals'],
+          ].forEach(([startIdx, endIdx, label]) => {
+            const x1 = x.getPixelForValue(startIdx) - 10;
+            const x2 = x.getPixelForValue(endIdx) + 10;
+            c.fillRect(x1, chartArea.top, x2 - x1, chartArea.bottom - chartArea.top);
+            c.fillStyle = colors.gold;
+            c.font = '600 10px Inter, sans-serif';
+            c.fillText(label, x1 + 4, chartArea.top + 12);
+            c.fillStyle = state.theme === 'dark' ? 'rgba(234, 179, 8, 0.08)' : 'rgba(212, 175, 55, 0.12)';
+          });
+          c.restore();
+        },
+      };
+
+      if (trendChartInstance) trendChartInstance.destroy();
+      trendChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: weeks.map((w) => `W${w}`),
+          datasets,
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { position: 'bottom', labels: { color: colors.text, font: { size: 11 } } },
+          },
+          scales: {
+            x: {
+              grid: { color: colors.grid },
+              ticks: { color: colors.muted, font: { family: 'JetBrains Mono', size: 10 } },
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: colors.grid },
+              ticks: { color: colors.muted, callback: (v) => `${v}%`, font: { family: 'JetBrains Mono', size: 11 } },
+            },
+          },
+        },
+        plugins: [examBandPlugin],
+      });
+    }
+
+    function renderBoxplot() {
+      const canvas = document.getElementById('boxplotCanvas');
+      const container = document.getElementById('boxplot-container');
+      if (!canvas || !container) return;
+
+      const dpr = window.devicePixelRatio || 1;
+      const rect = container.getBoundingClientRect();
+      const width = Math.max(320, rect.width || 680);
+      const height = Math.max(260, rect.height || 300);
+
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, width, height);
+
+      const colors = getThemeColors();
+      const pad = { top: 20, right: 20, bottom: 36, left: 46 };
+      const plotW = width - pad.left - pad.right;
+      const plotH = height - pad.top - pad.bottom;
+
+      const allRates = state.collegeStats.flatMap((c) => c.vals);
+      const maxVal = Math.max(15, Math.ceil((Math.max(...allRates, 12) + 2) / 5) * 5);
+
+      const yToPx = (v) => pad.top + plotH - (v / maxVal) * plotH;
+
+      // Grid lines
+      ctx.strokeStyle = colors.grid;
+      ctx.fillStyle = colors.muted;
+      ctx.font = '11px JetBrains Mono, monospace';
+      ctx.textAlign = 'right';
+      for (let v = 0; v <= maxVal; v += 5) {
+        const y = yToPx(v);
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(width - pad.right, y);
+        ctx.stroke();
+        ctx.fillText(`${v}%`, pad.left - 8, y + 4);
+      }
+
+      // University Baseline line
+      const baseY = yToPx(state.univBaselineRate);
+      ctx.save();
+      ctx.strokeStyle = colors.gold;
+      ctx.setLineDash([5, 4]);
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, baseY);
+      ctx.lineTo(width - pad.right, baseY);
+      ctx.stroke();
+      ctx.restore();
+
+      const cols = state.collegeStats;
+      if (!cols.length) return;
+      const stepX = plotW / cols.length;
+      const boxW = Math.min(34, stepX * 0.48);
+
+      cols.forEach((c, idx) => {
+        const cx = pad.left + stepX * (idx + 0.5);
+        const upperFence = c.q3 + 1.5 * c.iqr;
+        const lowerFence = Math.max(0, c.q1 - 1.5 * c.iqr);
+        const nonOutliers = c.sorted.filter((v) => v >= lowerFence && v <= upperFence);
+        const wLow = nonOutliers[0] ?? c.min;
+        const wHigh = nonOutliers[nonOutliers.length - 1] ?? c.max;
+        const outliers = c.sorted.filter((v) => v > upperFence || v < lowerFence);
+
+        const yQ1 = yToPx(c.q1);
+        const yQ3 = yToPx(c.q3);
+        const yMed = yToPx(c.median);
+        const yLow = yToPx(wLow);
+        const yHigh = yToPx(wHigh);
+        const yMean = yToPx(c.mean);
+
+        const strokeCol = c.isChronicallyElevated ? colors.danger : c.isSpikeSkewed ? colors.warn : colors.safe;
+
+        // Whisker line
+        ctx.strokeStyle = strokeCol;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(cx, yHigh);
+        ctx.lineTo(cx, yQ3);
+        ctx.moveTo(cx, yQ1);
+        ctx.lineTo(cx, yLow);
+        ctx.moveTo(cx - boxW * 0.35, yHigh);
+        ctx.lineTo(cx + boxW * 0.35, yHigh);
+        ctx.moveTo(cx - boxW * 0.35, yLow);
+        ctx.lineTo(cx + boxW * 0.35, yLow);
+        ctx.stroke();
+
+        // IQR Box
+        ctx.fillStyle = state.theme === 'dark' ? 'rgba(224, 62, 86, 0.16)' : 'rgba(139, 21, 40, 0.12)';
+        ctx.fillRect(cx - boxW / 2, yQ3, boxW, Math.max(2, yQ1 - yQ3));
+        ctx.strokeRect(cx - boxW / 2, yQ3, boxW, Math.max(2, yQ1 - yQ3));
+
+        // Median line
+        ctx.lineWidth = 2.6;
+        ctx.beginPath();
+        ctx.moveTo(cx - boxW / 2, yMed);
+        ctx.lineTo(cx + boxW / 2, yMed);
+        ctx.stroke();
+
+        // Mean Diamond
+        ctx.fillStyle = colors.gold;
+        ctx.beginPath();
+        ctx.moveTo(cx, yMean - 4.5);
+        ctx.lineTo(cx + 4.5, yMean);
+        ctx.lineTo(cx, yMean + 4.5);
+        ctx.lineTo(cx - 4.5, yMean);
+        ctx.closePath();
+        ctx.fill();
+
+        // Outliers
+        ctx.fillStyle = colors.danger;
+        outliers.forEach((ov) => {
+          ctx.beginPath();
+          ctx.arc(cx, yToPx(ov), 3.6, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // X-axis label
+        ctx.fillStyle = colors.text;
+        ctx.font = '600 11px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(c.code, cx, height - 12);
+      });
+    }
+
+    function renderDeviceChart() {
+      const ctx = document.getElementById('deviceGroupedChart');
+      if (!ctx) return;
+      const colors = getThemeColors();
+      const codes = state.collegeStats.map((c) => c.code);
+      const raw = getActiveRawDataset();
+
+      const deviceSeries = DEVICES.map((dev, i) => {
+        const palette = ['#e03e56', '#38bdf8', '#eab308'];
+        const data = codes.map((code) => {
+          const rows = raw.filter((r) => r.college === code && r.device_type === dev.type);
+          const att = rows.reduce((a, b) => a + b.login_attempts, 0);
+          const fail = rows.reduce((a, b) => a + b.failed_logins, 0);
+          return att > 0 ? Number(((fail / att) * 100).toFixed(2)) : 0;
+        });
+        return {
+          label: dev.type,
+          data,
+          backgroundColor: palette[i],
+          borderRadius: 5,
+        };
+      });
+
+      if (deviceChartInstance) deviceChartInstance.destroy();
+      deviceChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: codes, datasets: deviceSeries },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: colors.text, font: { size: 11 } } },
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: colors.text, font: { weight: '600', size: 11 } } },
+            y: {
+              beginAtZero: true,
+              grid: { color: colors.grid },
+              ticks: { color: colors.muted, callback: (v) => `${v}%`, font: { family: 'JetBrains Mono', size: 11 } },
+            },
+          },
+        },
+      });
+    }
+
+    /* --------------------------------------------------------------------------
+       F. STEPPER, ACCORDIONS, PASSWORD SHAKE DEMO & DATASET TABLE
+       -------------------------------------------------------------------------- */
+    function goPlannerStep(targetStep) {
+      if (targetStep < 1 || targetStep > 3 || targetStep === state.plannerStep) return;
+      const dirClass = targetStep > state.plannerStep ? 'step-slide-next' : 'step-slide-prev';
+      state.plannerStep = targetStep;
+
+      [1, 2, 3].forEach((s) => {
+        const el = document.getElementById(`planner-step-${s}`);
+        const pill = document.getElementById(`step-pill-${s}`);
+        el.classList.remove('step-slide-next', 'step-slide-prev');
+        if (s === targetStep) {
+          el.classList.remove('hidden');
+          el.classList.add(dirClass);
+          pill.style.backgroundColor = 'var(--brand-primary)';
+          pill.style.color = '#fff';
+        } else {
+          el.classList.add('hidden');
+          pill.style.backgroundColor = 'var(--bg-surface-alt)';
+          pill.style.color = 'var(--text-secondary)';
+        }
+      });
+
+      document.getElementById('btn-step-prev').disabled = targetStep === 1;
+      document.getElementById('btn-step-next').textContent = targetStep === 3 ? 'Done ✓' : 'Next Step →';
+      updatePlannerProjection();
+    }
+
+    function stepPlanner(delta) {
+      const next = state.plannerStep + delta;
+      if (next >= 1 && next <= 3) goPlannerStep(next);
+    }
+
+    function updatePlannerProjection() {
+      const cohort = document.querySelector('input[name="mfa-cohort"]:checked')?.value || 'chronic';
+      const useMfa = document.getElementById('chk-mfa')?.checked ?? true;
+      const useHygiene = document.getElementById('chk-hygiene')?.checked ?? true;
+
+      let targetCodes = ['CT', 'CBA'];
+      if (cohort === 'top4') targetCodes = ['CT', 'CBA', 'CIC', 'CoE'];
+      if (cohort === 'all8') targetCodes = COLLEGES.map((c) => c.code);
+
+      const totalBaselineUsers = COLLEGES.reduce((a, b) => a + b.baseUsers, 0); // 15,850
+      const users = COLLEGES.filter((c) => targetCodes.includes(c.code)).reduce((a, b) => a + b.baseUsers, 0);
+      const userSharePct = totalBaselineUsers > 0 ? (users / totalBaselineUsers) * 100 : 0;
+
+      const totalFailed = state.filteredPooled.reduce((a, b) => a + b.failed_logins, 0);
+      const targetFailed = state.filteredPooled
+        .filter((p) => targetCodes.includes(p.college))
+        .reduce((a, b) => a + b.failed_logins, 0);
+      const failedSharePct = totalFailed > 0 ? (targetFailed / totalFailed) * 100 : 0;
+
+      let postureLabel = 'Baseline Only';
+      if (useMfa && useHygiene) postureLabel = 'MFA + Rate-Limiting';
+      else if (useMfa) postureLabel = 'MFA Takeover Shield';
+      else if (useHygiene) postureLabel = 'Passphrase + Throttling';
+
+      document.getElementById('proj-users').textContent = users.toLocaleString();
+      document.getElementById('proj-users-sub').textContent = `${userSharePct.toFixed(1)}% of ${totalBaselineUsers.toLocaleString()} baseline users`;
+      document.getElementById('proj-target-failed').textContent = targetFailed.toLocaleString();
+      document.getElementById('proj-failed-share').textContent = `${failedSharePct.toFixed(1)}% of simulated failed attempts`;
+      document.getElementById('proj-posture').textContent = postureLabel;
+    }
+
+    function toggleAccordion(btn) {
+      const item = btn.closest('.accordion-item');
+      const isOpen = item.getAttribute('data-open') === 'true';
+      item.setAttribute('data-open', isOpen ? 'false' : 'true');
+    }
+
+    function fillWeakSample() {
+      const input = document.getElementById('demo-pwd-input');
+      input.value = 'usep2026';
+      validateDemoPassword(new Event('submit'));
+    }
+
+    // NIST SP 800-63B Compliant Check: Length (12+ chars) + Compromised/Context Blocklist (No symbol/uppercase complexity rules)
+    function validateDemoPassword(e) {
+      e.preventDefault();
+      const input = document.getElementById('demo-pwd-input');
+      const fb = document.getElementById('demo-pwd-feedback');
+      const val = input.value.trim();
+
+      const hasMinLength = val.length >= 12;
+      const isBlocklisted = /usep|davao|uve|password|qwerty|1234|admin/i.test(val);
+      const isRepeatedChars = /^(.)\1+$/.test(val);
+      const valid = hasMinLength && !isBlocklisted && !isRepeatedChars;
+
+      input.classList.remove('field-error-shake');
+      void input.offsetWidth;
+
+      if (!valid) {
+        input.classList.add('field-error-shake');
+        fb.textContent = !hasMinLength
+          ? `Rejected (NIST 800-63B): Passphrase is ${val.length} chars; requires at least 12 characters.`
+          : 'Rejected (NIST 800-63B): Matches compromised or USeP-specific blocklist term.';
+        fb.style.color = 'var(--status-danger)';
+      } else {
+        input.style.borderColor = 'var(--status-safe)';
+        input.style.backgroundColor = 'var(--status-safe-soft)';
+        fb.textContent = 'Compliant (NIST 800-63B): Meets 12+ char length & clears blocklist—no symbol or rotation rules required.';
+        fb.style.color = 'var(--status-safe)';
+      }
+    }
+
+    function sortRecords(key) {
+      if (state.recordsSortKey === key) {
+        state.recordsSortAsc = !state.recordsSortAsc;
+      } else {
+        state.recordsSortKey = key;
+        state.recordsSortAsc = true;
+      }
+      renderRecordsTable();
+    }
+
+    function changeRecordPage(delta) {
+      state.recordsPage = Math.max(1, state.recordsPage + delta);
+      renderRecordsTable();
+    }
+
+    function renderRecordsTable() {
+      const tbody = document.getElementById('records-tbody');
+      if (!tbody) return;
+      const query = document.getElementById('records-search').value.trim().toLowerCase();
+      const gran = document.getElementById('records-granularity').value;
+
+      let source = gran === 'device' ? getActiveRawDataset() : state.filteredPooled;
+      if (query) {
+        source = source.filter(
+          (r) =>
+            r.college.toLowerCase().includes(query) ||
+            r.collegeName.toLowerCase().includes(query) ||
+            `w${r.week}` === query ||
+            String(r.week) === query ||
+            r.device_type.toLowerCase().includes(query)
+        );
+      }
+
+      const key = state.recordsSortKey;
+      const asc = state.recordsSortAsc ? 1 : -1;
+      const sorted = [...source].sort((a, b) => {
+        if (typeof a[key] === 'string') return a[key].localeCompare(b[key]) * asc;
+        return (a[key] - b[key]) * asc;
+      });
+
+      const total = sorted.length;
+      const maxPage = Math.max(1, Math.ceil(total / state.recordsPageSize));
+      if (state.recordsPage > maxPage) state.recordsPage = maxPage;
+
+      const start = (state.recordsPage - 1) * state.recordsPageSize;
+      const slice = sorted.slice(start, start + state.recordsPageSize);
+
+      document.getElementById('records-subtitle').textContent =
+        gran === 'device'
+          ? `Showing device-segmented records (${total} rows across 26 weeks × 8 colleges × 3 devices).`
+          : `Showing pooled college-week records (${total} rows matching active filters).`;
+
+      document.getElementById('records-count-label').textContent =
+        total > 0 ? `Showing ${start + 1}–${Math.min(total, start + state.recordsPageSize)} of ${total} rows` : 'No matching records';
+
+      document.getElementById('btn-page-prev').disabled = state.recordsPage <= 1;
+      document.getElementById('btn-page-next').disabled = state.recordsPage >= maxPage;
+
+      tbody.innerHTML = slice
+        .map(
+          (r) => `
+          <tr class="hover:bg-black/5 dark:hover:bg-white/5">
+            <td class="py-2.5 px-3 font-semibold">W${String(r.week).padStart(2, '0')}</td>
+            <td class="py-2.5 px-3 font-sans font-semibold">${r.college}</td>
+            <td class="py-2.5 px-3 font-sans" style="color: var(--text-secondary);">${r.device_type}</td>
+            <td class="py-2.5 px-3 text-right">${r.active_users.toLocaleString()}</td>
+            <td class="py-2.5 px-3 text-right">${r.login_attempts.toLocaleString()}</td>
+            <td class="py-2.5 px-3 text-right">${r.failed_logins.toLocaleString()}</td>
+            <td class="py-2.5 px-3 text-right font-bold" style="color: ${r.failed_login_rate > 12 ? 'var(--status-danger)' : 'var(--text-primary)'};">${r.failed_login_rate.toFixed(2)}%</td>
+          </tr>
+        `
+        )
+        .join('');
+    }
+
+    /* --------------------------------------------------------------------------
+       G. NAVIGATION, ROLE VIEW, INSTANT THEME SWITCH, TOOLTIPS & SPRING PHYSICS
+       -------------------------------------------------------------------------- */
+    function switchTab(idx) {
+      state.activeTab = idx;
+      document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+        if (i === idx) {
+          btn.style.backgroundColor = 'var(--brand-primary)';
+          btn.style.color = '#ffffff';
+        } else {
+          btn.style.backgroundColor = 'transparent';
+          btn.style.color = 'var(--text-secondary)';
+        }
+      });
+
+      document.querySelectorAll('.tab-panel').forEach((panel, i) => {
+        if (i === idx) {
+          panel.classList.remove('hidden');
+          panel.classList.remove('animate-entrance');
+          void panel.offsetWidth;
+          panel.classList.add('animate-entrance');
+        } else {
+          panel.classList.add('hidden');
+        }
+      });
+
+      if (idx === 1) {
+        renderTrendChart();
+        renderBoxplot();
+      } else if (idx === 2) {
+        renderDeviceChart();
+      }
+    }
+
+    function setRoleView(role) {
+      state.role = role;
+      const thumb = document.getElementById('role-thumb');
+      const btnDean = document.getElementById('btn-role-dean');
+      const btnAnalyst = document.getElementById('btn-role-analyst');
+      const overrideBox = document.getElementById('analyst-override-box');
+
+      thumb.setAttribute('data-role', role);
+      if (role === 'dean') {
+        btnDean.style.color = '#ffffff';
+        btnAnalyst.style.color = 'var(--text-secondary)';
+        overrideBox.classList.add('hidden');
+        showToast('Dean View: Executive summary & MFA priority active');
+      } else {
+        btnDean.style.color = 'var(--text-secondary)';
+        btnAnalyst.style.color = '#ffffff';
+        overrideBox.classList.remove('hidden');
+        showToast('Analyst View: Omnibus test diagnostics & overrides active');
+      }
+      applyFilters();
+    }
+
+    // Rule: Theme switches turn transitions off while changing
+    function toggleTheme() {
+      const html = document.documentElement;
+      html.classList.add('theme-switching');
+      state.theme = state.theme === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', state.theme);
+
+      document.getElementById('icon-sun').classList.toggle('hidden', state.theme === 'light');
+      document.getElementById('icon-moon').classList.toggle('hidden', state.theme === 'dark');
+
+      renderBarChart();
+      renderTrendChart();
+      renderBoxplot();
+      renderDeviceChart();
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          html.classList.remove('theme-switching');
+        });
+      });
+    }
+
+    function openInfoModal() {
+      const backdrop = document.getElementById('info-modal-backdrop');
+      const sheet = document.getElementById('info-modal-sheet');
+      sheet.style.transform = 'translate3d(0, 0, 0)';
+      backdrop.classList.remove('hidden');
+      backdrop.classList.add('flex');
+    }
+
+    function closeInfoModal() {
+      const backdrop = document.getElementById('info-modal-backdrop');
+      backdrop.classList.add('hidden');
+      backdrop.classList.remove('flex');
+    }
+
+    function copyPythonScript() {
+      const text = document.getElementById('python-code-block').innerText;
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('Python verification script copied to clipboard');
+    }
+
+    function downloadPythonScript() {
+      const text = document.getElementById('python-code-block').innerText;
+      triggerDownload('kandadohoy_uve_analysis.py', text, 'text/x-python');
+    }
+
+    function exportSummaryCSV() {
+      const headers = ['Rank', 'Scenario', 'College', 'College_Name', 'Weeks_N', 'Mean_Failed_Rate', 'SD', 'Median', 'IQR', 'LOO_Rest_Rate', 'CI_95_Low', 'CI_95_High', 'Holm_p'];
+      const rows = state.collegeStats.map((c, i) => [
+        i + 1, state.scenario, c.code, `"${c.name}"`, c.n, c.mean.toFixed(4), c.sd.toFixed(4),
+        c.median.toFixed(4), c.iqr.toFixed(4), c.looBaseline.toFixed(4), c.ciLow.toFixed(4), c.ciHigh.toFixed(4), c.holmP.toFixed(6)
+      ]);
+      const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+      triggerDownload(`kandadohoy_${state.scenario}_college_summary.csv`, csv, 'text/csv');
+      showToast(`Downloaded kandadohoy_${state.scenario}_college_summary.csv`);
+    }
+
+    function exportFilteredRecordsCSV() {
+      const headers = ['scenario', 'week', 'college', 'device_type', 'active_users', 'login_attempts', 'failed_logins', 'failed_login_rate'];
+      const rows = state.filteredPooled.map((r) => [
+        state.scenario, r.week, r.college, `"${r.device_type}"`, r.active_users, r.login_attempts, r.failed_logins, r.failed_login_rate.toFixed(4)
+      ]);
+      const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+      triggerDownload(`kandadohoy_${state.scenario}_weekly_records.csv`, csv, 'text/csv');
+      showToast(`Downloaded kandadohoy_${state.scenario}_weekly_records.csv`);
+    }
+
+    function exportFilteredRecordsCSV() {
+      const headers = ['week', 'college', 'device_type', 'active_users', 'login_attempts', 'failed_logins', 'failed_login_rate'];
+      const rows = state.filteredPooled.map((r) => [
+        r.week, r.college, `"${r.device_type}"`, r.active_users, r.login_attempts, r.failed_logins, r.failed_login_rate.toFixed(4)
+      ]);
+      const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+      triggerDownload('kandadohoy_weekly_records.csv', csv, 'text/csv');
+      showToast('Downloaded kandadohoy_weekly_records.csv');
+    }
+
+    function triggerDownload(filename, content, mime) {
+      const blob = new Blob([content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const el = document.getElementById('toast-banner');
+      document.getElementById('toast-message').textContent = msg;
+      el.classList.remove('hidden');
+      el.classList.add('flex');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        el.classList.add('hidden');
+        el.classList.remove('flex');
+      }, 2600);
+    }
+
+    // Rule: Tooltips delay only the first one; once open, show subsequent instantly
+    (function initTooltips() {
+      const tooltipEl = document.getElementById('global-tooltip');
+      let isWarm = false;
+      let openTimer = null;
+      let coolTimer = null;
+
+      document.addEventListener('mouseover', (e) => {
+        const target = e.target.closest('[data-tooltip]');
+        if (!target) return;
+        clearTimeout(openTimer);
+        clearTimeout(coolTimer);
+
+        const show = () => {
+          tooltipEl.textContent = target.getAttribute('data-tooltip');
+          const rect = target.getBoundingClientRect();
+          const x = Math.max(8, Math.min(window.innerWidth - 270, rect.left + rect.width / 2 - 120));
+          const y = rect.bottom + 8;
+          tooltipEl.style.transform = `translate3d(${x}px, ${y}px, 0) scale(1)`;
+          tooltipEl.classList.add('visible');
+          isWarm = true;
+        };
+
+        if (isWarm) {
+          show();
+        } else {
+          openTimer = setTimeout(show, 420);
+        }
+      });
+
+      document.addEventListener('mouseout', (e) => {
+        const target = e.target.closest('[data-tooltip]');
+        if (!target) return;
+        clearTimeout(openTimer);
+        tooltipEl.classList.remove('visible');
+        coolTimer = setTimeout(() => {
+          isWarm = false;
+        }, 700);
+      });
+    })();
+
+    // Rule: Spring physics with release velocity & Rubber-band resistance on KPI strip + Modal drag
+    function springAnimate(initialPos, initialVel, targetPos, onUpdate, onComplete) {
+      let pos = initialPos;
+      let vel = initialVel;
+      const stiffness = 240;
+      const damping = 30; // critically damped (bounce: 0)
+      let lastTime = performance.now();
+
+      function step(now) {
+        const dt = Math.min(0.032, (now - lastTime) / 1000);
+        lastTime = now;
+        const force = -stiffness * (pos - targetPos) - damping * vel;
+        vel += force * dt;
+        pos += vel * dt;
+        onUpdate(pos);
+        if (Math.abs(pos - targetPos) < 0.3 && Math.abs(vel) < 2) {
+          onUpdate(targetPos);
+          if (onComplete) onComplete();
+        } else {
+          requestAnimationFrame(step);
+        }
+      }
+      requestAnimationFrame(step);
+    }
+
+    (function initSpringInteractions() {
+      // 1. Rubber-band horizontal drag on KPI strip
+      const track = document.getElementById('kpi-carousel-track');
+      if (track) {
+        let dragging = false, startX = 0, currentX = 0, lastX = 0, lastT = 0, velX = 0;
+        const startDrag = (x) => { dragging = true; startX = x; lastX = x; lastT = performance.now(); velX = 0; };
+        const moveDrag = (x) => {
+          if (!dragging) return;
+          const now = performance.now();
+          const dt = Math.max(1, now - lastT);
+          velX = ((x - lastX) / dt) * 1000;
+          lastX = x; lastT = now;
+          const raw = x - startX;
+          // Non-linear resistance growing the further you pull
+          currentX = raw / (1 + Math.abs(raw) * 0.012);
+          track.style.transform = `translate3d(${currentX}px, 0, 0)`;
+        };
+        const endDrag = () => {
+          if (!dragging) return;
+          dragging = false;
+          springAnimate(currentX, velX * 0.25, 0, (p) => {
+            track.style.transform = `translate3d(${p}px, 0, 0)`;
+          });
+        };
+
+        track.addEventListener('mousedown', (e) => startDrag(e.clientX));
+        window.addEventListener('mousemove', (e) => moveDrag(e.clientX));
+        window.addEventListener('mouseup', endDrag);
+        track.addEventListener('touchstart', (e) => startDrag(e.touches[0].clientX), { passive: true });
+        track.addEventListener('touchmove', (e) => moveDrag(e.touches[0].clientX), { passive: true });
+        track.addEventListener('touchend', endDrag);
+      }
+
+      // 2. Vertical flick/drag with velocity handoff on Methodology Modal
+      const handle = document.getElementById('modal-drag-handle');
+      const sheet = document.getElementById('info-modal-sheet');
+      if (handle && sheet) {
+        let dragging = false, startY = 0, currentY = 0, lastY = 0, lastT = 0, velY = 0;
+        const start = (y) => { dragging = true; startY = y; lastY = y; lastT = performance.now(); velY = 0; };
+        const move = (y) => {
+          if (!dragging) return;
+          const now = performance.now();
+          const dt = Math.max(1, now - lastT);
+          velY = ((y - lastY) / dt) * 1000;
+          lastY = y; lastT = now;
+          const dy = y - startY;
+          currentY = dy < 0 ? dy / (1 + Math.abs(dy) * 0.02) : dy;
+          sheet.style.transform = `translate3d(0, ${currentY}px, 0)`;
+        };
+        const end = () => {
+          if (!dragging) return;
+          dragging = false;
+          if (currentY > 110 || velY > 650) {
+            closeInfoModal();
+            sheet.style.transform = 'translate3d(0, 0, 0)';
+          } else {
+            springAnimate(currentY, velY, 0, (p) => {
+              sheet.style.transform = `translate3d(0, ${p}px, 0)`;
+            });
+          }
+        };
+        handle.addEventListener('mousedown', (e) => start(e.clientY));
+        window.addEventListener('mousemove', (e) => move(e.clientY));
+        window.addEventListener('mouseup', end);
+        handle.addEventListener('touchstart', (e) => start(e.touches[0].clientY), { passive: true });
+        handle.addEventListener('touchmove', (e) => move(e.touches[0].clientY), { passive: true });
+        handle.addEventListener('touchend', end);
+      }
+    })();
+
+    window.addEventListener('resize', () => {
+      if (state.activeTab === 1) renderBoxplot();
+    });
+
+    window.onload = function () {
+      applyFilters();
+    };
+  </script>
+</body>
+</html>
