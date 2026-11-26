@@ -1,0 +1,14 @@
+.claude/audit.log
+.playwright-mcp/
+.vscode/
+.superpowers/
+
+# Local agent / tooling files (kept on disk, not tracked)
+AGENTS.md
+.clinerules/
+.cursor/
+.opencode/
+.windsurf/
+.claude/
+.github/copilot-instructions.md
+docs/superpowers/

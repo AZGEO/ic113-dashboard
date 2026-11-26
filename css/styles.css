@@ -1,0 +1,553 @@
+/* ==========================================================================
+   1. DESIGN TOKENS, ACCORDION INTERPOLATION & INSTANT THEME SWITCHING
+   Light = frosted glass over soft blush / gold / sky glows.
+   Dark  = obsidian surfaces, hairline borders, faint maroon / gold glows.
+   ========================================================================== */
+:root {
+  interpolate-size: allow-keywords;
+
+  --bg-canvas: #eef1f6;
+  --bg-surface: rgba(255, 255, 255, 0.62);
+  --bg-surface-alt: rgba(255, 255, 255, 0.55);
+  --bg-input: rgba(255, 255, 255, 0.82);
+  --border-subtle: rgba(15, 23, 42, 0.09);
+  --border-strong: rgba(15, 23, 42, 0.18);
+  --hairline: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #566175;
+
+  /* USeP Maroon & Gold Identity */
+  --brand-primary: #8b1528;
+  --brand-primary-hover: #701020;
+  --brand-soft: rgba(139, 21, 40, 0.10);
+  --brand-gold: #8f6508;
+  --brand-gold-soft: rgba(212, 175, 55, 0.18);
+
+  /* Semantic Statistical & Risk Tokens */
+  --status-safe: #0b7a57;
+  --status-safe-soft: rgba(13, 148, 104, 0.12);
+  --status-warn: #b45309;
+  --status-warn-soft: rgba(217, 119, 6, 0.14);
+  --status-danger: #c81e1e;
+  --status-danger-soft: rgba(220, 38, 38, 0.12);
+
+  /* Glass, glows and heatmap scale */
+  --glass-blur: 18px;
+  --glow-a: rgba(246, 201, 208, 0.65);
+  --glow-b: rgba(253, 231, 166, 0.55);
+  --glow-c: rgba(201, 220, 245, 0.60);
+  --heat-lo: #f1f4f9;
+  --surface-solid: #f6f8fb;
+  --heat-hi: #8b1528;
+
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 28px rgba(15, 23, 42, 0.06);
+  --shadow-float: 0 20px 44px rgba(15, 23, 42, 0.18);
+}
+
+html[data-theme="dark"] {
+  --bg-canvas: #06080b;
+  --bg-surface: rgba(14, 18, 24, 0.72);
+  --bg-surface-alt: #0c1016;
+  --bg-input: #090c11;
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --hairline: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #8b9bb0;
+
+  --brand-primary: #e03e56;
+  --brand-primary-hover: #eb5269;
+  --brand-soft: rgba(224, 62, 86, 0.16);
+  --brand-gold: #eab308;
+  --brand-gold-soft: rgba(234, 179, 8, 0.15);
+
+  --status-safe: #10b981;
+  --status-safe-soft: rgba(16, 185, 129, 0.14);
+  --status-warn: #f59e0b;
+  --status-warn-soft: rgba(245, 158, 11, 0.15);
+  --status-danger: #f43f5e;
+  --status-danger-soft: rgba(244, 63, 94, 0.16);
+
+  --glass-blur: 14px;
+  --glow-a: rgba(224, 62, 86, 0.10);
+  --glow-b: rgba(234, 179, 8, 0.06);
+  --glow-c: rgba(16, 185, 129, 0.04);
+  --heat-lo: #121820;
+  --surface-solid: #0e1218;
+  --heat-hi: #e03e56;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 30px rgba(0, 0, 0, 0.35);
+  --shadow-float: 0 24px 52px rgba(0, 0, 0, 0.68);
+}
+
+/* Rule: Theme switches disable transitions during swap */
+.theme-switching * {
+  transition: none !important;
+}
+
+body {
+  background-color: var(--bg-canvas);
+  background-image:
+    radial-gradient(60rem 38rem at 0% -8%, var(--glow-a), transparent 62%),
+    radial-gradient(52rem 34rem at 100% -4%, var(--glow-b), transparent 60%),
+    radial-gradient(70rem 40rem at 50% 108%, var(--glow-c), transparent 64%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.surface-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card), var(--hairline);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+}
+
+.surface-alt {
+  background-color: var(--bg-surface-alt);
+  border: 1px solid var(--border-subtle);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .surface-card { background-color: var(--bg-surface-alt); }
+}
+
+.input-control {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+.input-control:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}
+
+/* ==========================================================================
+   2. MOTION & PHYSICS RULES
+   ========================================================================== */
+
+/* Rule: Buttons scale to 0.97 while pressed */
+button, .pressable {
+  transition: scale 150ms ease-out, background-color 150ms ease, border-color 150ms ease, color 150ms ease, opacity 150ms ease;
+  cursor: pointer;
+}
+button:active, .pressable:active {
+  scale: 0.97;
+}
+
+/* Rule: Entrances start from scale 0.97 with opacity 0, never scale 0 */
+@keyframes enterScaleFade {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-entrance {
+  animation: enterScaleFade 220ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Rule: Steppers slide next step in from navigation direction */
+@keyframes slideFromRight {
+  from { opacity: 0; transform: translate3d(28px, 0, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes slideFromLeft {
+  from { opacity: 0; transform: translate3d(-28px, 0, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.step-slide-next {
+  animation: slideFromRight 240ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.step-slide-prev {
+  animation: slideFromLeft 240ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Rule: Wrong passwords shake field (0, -10, 10, -6, 6, -3, 0px over 360ms) + red */
+@keyframes passwordShake {
+  0%   { transform: translateX(0px); }
+  16%  { transform: translateX(-10px); }
+  33%  { transform: translateX(10px); }
+  50%  { transform: translateX(-6px); }
+  66%  { transform: translateX(6px); }
+  83%  { transform: translateX(-3px); }
+  100% { transform: translateX(0px); }
+}
+.field-error-shake {
+  animation: passwordShake 360ms ease-in-out;
+  border-color: var(--status-danger) !important;
+  background-color: var(--status-danger-soft) !important;
+  box-shadow: 0 0 0 3px var(--status-danger-soft) !important;
+}
+
+/* Rule: Accordions smoothly animate height: auto */
+.accordion-body {
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: height 280ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease;
+}
+.accordion-item[data-open="true"] .accordion-body {
+  height: auto;
+  opacity: 1;
+}
+.accordion-chevron {
+  transition: transform 240ms ease;
+}
+.accordion-item[data-open="true"] .accordion-chevron {
+  transform: rotate(180deg);
+}
+
+/* Rule: Moving things animate transform, never top or left */
+.role-thumb {
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), background-color 180ms ease;
+  transform: translate3d(0, 0, 0);
+}
+.role-thumb[data-role="analyst"] {
+  transform: translate3d(100%, 0, 0);
+}
+
+#global-tooltip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(-9999px, -9999px, 0) scale(0.97);
+  transition: opacity 120ms ease, transform 120ms ease;
+  max-width: 260px;
+}
+#global-tooltip.visible {
+  opacity: 1;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ==========================================================================
+   3. DATA MOTION (compositor-only: transform + opacity)
+   ========================================================================== */
+
+/* Staggered KPI entrance; --i is set per card from JS */
+@keyframes riseIn {
+  from { opacity: 0; transform: translate3d(0, 10px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.stagger-in {
+  animation: riseIn 360ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 55ms);
+}
+
+/* Quick swap when filters or the Dean/Analyst view change the verdict */
+@keyframes swapIn {
+  from { opacity: 0.35; transform: translate3d(0, 4px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.fx-swap {
+  animation: swapIn 240ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+/* Rule: Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   4. NAVIGATION: frosted sticky header, sticky tab nav and scroll-spy chips
+   ========================================================================== */
+.app-header {
+  background-color: var(--bg-surface);
+  border-color: var(--border-subtle);
+  box-shadow: var(--hairline);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+}
+
+.tab-nav {
+  position: sticky;
+  top: calc(var(--header-h, 64px) + 8px);
+  z-index: 20;
+  scroll-margin-top: calc(var(--header-h, 64px) + 8px);
+}
+
+.spy-chips {
+  display: flex;
+  gap: 0.375rem;
+  overflow-x: auto;
+  padding: 0.5rem 0.25rem 0.125rem;
+  margin-top: 0.375rem;
+  border-top: 1px solid var(--border-subtle);
+}
+.spy-chip {
+  flex: none;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+.spy-chip:hover { color: var(--text-primary); border-color: var(--border-strong); }
+.spy-chip[aria-current="true"] {
+  background-color: var(--brand-soft);
+  border-color: var(--brand-primary);
+  color: var(--brand-primary);
+}
+
+/* Anchored sections clear the sticky header + nav (height set in JS as --nav-h) */
+[id^="sec-"] {
+  scroll-margin-top: calc(var(--header-h, 64px) + var(--nav-h, 96px) + 16px);
+}
+
+/* ==========================================================================
+   5. SCOPE RAIL: sticky on desktop, Active Scope pills
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .scope-rail {
+    position: sticky;
+    top: calc(var(--header-h, 64px) + 8px);
+    max-height: calc(100vh - var(--header-h, 64px) - 16px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+    padding-right: 2px;
+  }
+}
+
+.scope-bar { display: flex; flex-wrap: wrap; gap: 0.375rem; list-style: none; margin: 0; padding: 0; }
+.scope-bar > li { min-width: 0; max-width: 100%; display: flex; }
+.scope-pill {
+  max-width: 100%;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface-alt);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.scope-pill.is-changed {
+  background-color: var(--brand-soft);
+  border-color: var(--brand-primary);
+  color: var(--brand-primary);
+  font-weight: 700;
+}
+.scope-pill.is-changed:hover { background-color: var(--brand-primary); color: #fff; }
+
+/* ==========================================================================
+   6. KPI CARDS: sparklines + severity badges
+   ========================================================================== */
+.kpi-spark { height: 32px; margin-top: 0.625rem; }
+.spark { display: block; overflow: visible; }
+.spark polyline { stroke: currentColor; stroke-width: 1.75; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.spark circle, .spark rect { fill: currentColor; }
+.spark rect { opacity: 0.75; }
+.spark[data-empty="true"] {
+  background: repeating-linear-gradient(90deg, var(--border-strong) 0 4px, transparent 4px 8px) bottom / 100% 1px no-repeat;
+}
+.tone-brand { color: var(--brand-primary); }
+.tone-safe { color: var(--status-safe); }
+.tone-warn { color: var(--status-warn); }
+.tone-danger { color: var(--status-danger); }
+
+.sev-badge {
+  flex: none;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+  background-color: var(--bg-surface-alt);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+.sev-badge:empty { display: none; }
+.sev-safe { background-color: var(--status-safe-soft); color: var(--status-safe); border-color: transparent; }
+.sev-warn { background-color: var(--status-warn-soft); color: var(--status-warn); border-color: transparent; }
+.sev-danger { background-color: var(--status-danger-soft); color: var(--status-danger); border-color: transparent; }
+
+
+/* ==========================================================================
+   7. COHORT HEATMAP + glass tooltip
+   ========================================================================== */
+.heat-scroll { overflow-x: auto; padding-bottom: 4px; }
+.heat-grid { min-width: 640px; display: grid; gap: 3px; }
+.heat-row { display: grid; grid-template-columns: 44px repeat(26, minmax(14px, 1fr)); gap: 3px; align-items: center; }
+.heat-label {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  padding-right: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background-color: var(--surface-solid);
+}
+.heat-week { font-size: 9px; text-align: center; color: var(--text-muted); height: 12px; line-height: 12px; }
+.heat-week.is-exam { color: var(--brand-gold); font-weight: 700; border-top: 2px solid var(--brand-gold); }
+.heat-cell {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  min-height: 14px;
+  padding: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  background-color: var(--heat-lo);
+}
+button.heat-cell { cursor: crosshair; }
+button.heat-cell:hover, button.heat-cell:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 1px; position: relative; z-index: 2; }
+.heat-empty {
+  background-image: repeating-linear-gradient(135deg, transparent 0 3px, var(--border-strong) 3px 4px);
+  border-style: dashed;
+  background-color: transparent;
+}
+.heat-none { padding: 2rem 0; text-align: center; font-size: 12px; color: var(--text-muted); }
+.heat-legend { display: flex; align-items: center; gap: 0.5rem; font-size: 11px; color: var(--text-muted); }
+.heat-legend-bar {
+  width: 120px;
+  height: 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: linear-gradient(90deg, var(--heat-lo), var(--heat-hi));
+}
+
+.heat-tooltip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(-9999px, -9999px, 0);
+  transition: opacity 120ms ease;
+  min-width: 170px;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.875rem;
+  border: 1px solid var(--border-strong);
+  background-color: var(--bg-surface);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: var(--shadow-float), var(--hairline);
+  color: var(--text-primary);
+}
+.heat-tooltip.visible { opacity: 1; }
+.heat-tip-title { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+.heat-tip-tag { margin-left: 4px; padding: 1px 6px; border-radius: 999px; background: var(--brand-gold-soft); color: var(--brand-gold); font-size: 10px; }
+.heat-tip-rate { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+.heat-tip-sub { font-size: 11px; color: var(--text-muted); }
+
+
+/* ==========================================================================
+   8. RECORDS TABLE: live search + inline rate bars
+   ========================================================================== */
+#records-search::-webkit-search-cancel-button { display: none; }
+.records-clear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--text-muted);
+}
+.records-clear:hover { background-color: var(--brand-soft); color: var(--brand-primary); }
+.records-clear:active { transform: translateY(-50%) scale(0.97); }
+
+.records-row:hover { background-color: var(--brand-soft); }
+.records-row mark {
+  background-color: var(--brand-gold-soft);
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 1px;
+  box-shadow: inset 0 -2px 0 var(--brand-gold);
+}
+
+.rate-bar {
+  display: inline-block;
+  width: 56px;
+  height: 6px;
+  border-radius: 999px;
+  background-color: var(--border-subtle);
+  overflow: hidden;
+  flex: none;
+}
+.rate-bar > i { display: block; height: 100%; border-radius: 999px; background-color: var(--brand-primary); }
+.rate-hot .rate-bar > i { background-color: var(--status-danger); }
+
+/* ==========================================================================
+   9. KEYBOARD FOCUS
+   ========================================================================== */
+a:focus-visible, button:focus-visible, summary:focus-visible, .spy-chip:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
+}
+select:focus-visible, input:focus-visible { outline: none; }
+button.heat-cell:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 1px; }
+
+/* ==========================================================================
+   10. SCOPE RAIL ON SHORT LAPTOP SCREENS: compact spacing so the footnote
+   at the bottom is never cut off; any remaining overflow scrolls cleanly.
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .scope-rail { padding-bottom: 1.25rem; scroll-padding-bottom: 1.25rem; }
+}
+@media (min-width: 1024px) and (max-height: 960px) {
+  .scope-rail > * + * { margin-top: 0.625rem !important; }
+  .scope-rail section { padding: 0.75rem !important; }
+  .scope-rail section.space-y-3\.5 > * + *,
+  .scope-rail section.space-y-3 > * + * { margin-top: 0.5rem !important; }
+  .scope-rail .grid { gap: 0.5rem; }
+  .scope-rail .input-control { padding-top: 0.3125rem; padding-bottom: 0.3125rem; }
+}
+
+/* ==========================================================================
+   11. TAB BAR: drag-to-scroll cursor + overflow edge fades
+   ========================================================================== */
+.tab-scroller { --fade: 28px; }
+.tab-scroller.can-scroll,
+.tab-scroller.can-scroll button { cursor: grab; }
+.tab-scroller.is-dragging,
+.tab-scroller.is-dragging button { cursor: grabbing; user-select: none; }
+.tab-scroller.is-dragging button { pointer-events: none; }
+.tab-scroller.fade-right {
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - var(--fade)), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - var(--fade)), transparent);
+}
+.tab-scroller.fade-left {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--fade));
+  mask-image: linear-gradient(90deg, transparent, #000 var(--fade));
+}
+.tab-scroller.fade-left.fade-right {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent);
+}

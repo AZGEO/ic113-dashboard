@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KandadoHoy — Failed UVE Logins Across USeP Colleges</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      darkMode: ['selector', '[data-theme="dark"]'],
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- ==========================================================================
+       0. PERSISTENT SIMULATION & PIPELINE DEMONSTRATION BANNER
+       ========================================================================== -->
+  <div class="w-full border-b px-4 py-2 text-center text-[11px] sm:text-xs font-medium flex flex-wrap items-center justify-center gap-2" style="background-color: var(--brand-gold-soft); border-color: var(--border-subtle); color: var(--text-primary);">
+    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider" style="background-color: var(--brand-gold); color: #0f172a;">
+      Simulated Data · Pipeline Demo
+    </span>
+    <span>
+      Demonstrating the KandadoHoy repeated-measures IAM analysis pipeline on <strong>synthetic 26-week UVE data</strong> (not actual USeP authentication logs). Toggle the <strong>Null Control</strong> dataset in the left rail to verify false-positive control.
+    </span>
+  </div>
+
+  <!-- ==========================================================================
+       1. TOP APPLICATION BAR (KandadoHoy Identity)
+       ========================================================================== -->
+  <header class="app-header sticky top-0 z-30 border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Brand Identity -->
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm" style="background: linear-gradient(135deg, var(--brand-primary), #540b17); color: #fff;">
+          <!-- Keyhole Padlock SVG -->
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            <circle cx="12" cy="16" r="1"/>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-extrabold tracking-tight truncate">KandadoHoy</h1>
+            <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold" style="background-color: var(--brand-soft); color: var(--brand-primary);">
+              IAM Pipeline Demo
+            </span>
+          </div>
+          <p class="text-xs truncate" style="color: var(--text-muted);">Simulated Failed UVE Logins Across 8 USeP Colleges · 26-Week Cohort</p>
+        </div>
+      </div>
+
+      <!-- View Switcher + Theme + Methodology Info -->
+      <div class="flex items-center gap-2 shrink-0">
+        <!-- Segmented Audience Switch (Dean Summary vs Statistical Analyst) -->
+        <div class="relative grid grid-cols-2 p-1 rounded-xl border" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle);" role="group" aria-label="Audience View Mode">
+          <div id="role-thumb" data-role="dean" class="role-thumb absolute left-1 top-1 bottom-1 w-[calc(50%-4px)] rounded-lg shadow-sm" style="background-color: var(--brand-primary);"></div>
+          <button id="btn-role-dean" type="button" onclick="setRoleView('dean')" data-tooltip="Dean View: Plain-language findings & MFA rollout priorities" class="relative z-10 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+            </svg>
+            <span>Dean View</span>
+          </button>
+          <button id="btn-role-analyst" type="button" onclick="setRoleView('analyst')" data-tooltip="Analyst View: ANOVA/Kruskal-Wallis F/H statistics, p-values & CIs" class="relative z-10 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold" style="color: var(--text-secondary);">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/>
+            </svg>
+            <span>Analyst View</span>
+          </button>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button id="btn-theme" type="button" onclick="toggleTheme()" data-tooltip="Toggle Dark / Light theme" class="p-2.5 rounded-xl border" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle); color: var(--text-primary);" aria-label="Toggle Theme">
+          <svg id="icon-sun" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+          <svg id="icon-moon" class="w-4 h-4 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+
+        <!-- Study Methodology & Python Code Modal Trigger -->
+        <button id="btn-info" type="button" onclick="openInfoModal()" data-tooltip="About KandadoHoy, team members, simulation generator & Python script" class="flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle); color: var(--text-primary);">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 11v5.5"/><circle cx="12" cy="7.75" r="0.6" fill="currentColor"/>
+          </svg>
+          <span class="hidden md:inline">About &amp; Methodology</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       2. MAIN WORKSPACE (Left Scope Rail + Right Analysis Stage)
+       ========================================================================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+    <!-- LEFT COLUMN (3 cols on desktop): Study Scope Filters + Statistical Engine Card -->
+    <aside class="scope-rail lg:col-span-3 space-y-4">
+      <!-- Active Scope pill bar: every filter at a glance; changed ones reset on click -->
+      <section class="surface-card rounded-2xl p-3.5" aria-label="Active scope">
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <h2 class="text-sm font-bold">Active scope</h2>
+          <span id="active-scope-count" class="text-[11px] font-semibold" style="color: var(--text-muted);">Default scope</span>
+        </div>
+        <ul id="active-scope-bar" class="scope-bar"></ul>
+      </section>
+
+      <!-- Scope & Cohort Filter Panel -->
+      <section class="surface-card rounded-2xl p-4 space-y-3.5" aria-label="Study Filters">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4" style="color: var(--brand-primary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+            </svg>
+            <h2 class="text-xs font-bold uppercase tracking-wider" style="color: var(--text-secondary);">Dataset Scope</h2>
+          </div>
+          <button type="button" onclick="resetFilters()" class="text-xs font-semibold px-2.5 py-1 rounded-lg border" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle); color: var(--text-secondary);">
+            Reset
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+          <!-- Simulation Scenario (Effect Scenario vs. Null-Data Control) -->
+          <div>
+            <label for="filter-scenario" class="block text-[11px] font-semibold uppercase tracking-wide mb-1" style="color: var(--brand-primary);">Simulation Scenario</label>
+            <select id="filter-scenario" onchange="applyFiltersDebounced()" class="input-control w-full rounded-xl px-3 py-2 text-xs font-semibold" style="border-color: var(--brand-primary);">
+              <option value="effect">Effect Scenario (Chronic + Spikes)</option>
+              <option value="null">Null-Data Control (No College Diff.)</option>
+            </select>
+          </div>
+
+          <!-- Period Filter -->
+          <div>
+            <label for="filter-period" class="block text-[11px] font-semibold uppercase tracking-wide mb-1" style="color: var(--text-muted);">Academic Window</label>
+            <select id="filter-period" onchange="applyFiltersDebounced()" class="input-control w-full rounded-xl px-3 py-2 text-xs font-medium">
+              <option value="all">Full Semester (Weeks 1–26)</option>
+              <option value="first_half">First Half (Weeks 1–13)</option>
+              <option value="second_half">Second Half (Weeks 14–26)</option>
+              <option value="exams">Exam Weeks (Wks 8–9, 17–18)</option>
+              <option value="regular">Regular Class Weeks Only</option>
+            </select>
+          </div>
+
+          <!-- College Filter -->
+          <div>
+            <label for="filter-college" class="block text-[11px] font-semibold uppercase tracking-wide mb-1" style="color: var(--text-muted);">USeP College</label>
+            <select id="filter-college" onchange="applyFiltersDebounced()" class="input-control w-full rounded-xl px-3 py-2 text-xs font-medium">
+              <option value="ALL">All 8 USeP Colleges</option>
+              <option value="CT">CT — Technology</option>
+              <option value="CBA">CBA — Business Admin.</option>
+              <option value="CIC">CIC — Info &amp; Computing</option>
+              <option value="CoE">CoE — Engineering</option>
+              <option value="CAEc">CAEc — Applied Economics</option>
+              <option value="CAS">CAS — Arts &amp; Sciences</option>
+              <option value="CEd">CEd — Education</option>
+              <option value="CDM">CDM — Development Mgmt.</option>
+            </select>
+          </div>
+
+          <!-- Device Type Filter -->
+          <div>
+            <label for="filter-device" class="block text-[11px] font-semibold uppercase tracking-wide mb-1" style="color: var(--text-muted);">Device Type</label>
+            <select id="filter-device" onchange="applyFiltersDebounced()" class="input-control w-full rounded-xl px-3 py-2 text-xs font-medium">
+              <option value="ALL">All Devices (Pooled Counts)</option>
+              <option value="Mobile">Mobile</option>
+              <option value="Desktop/Laptop">Desktop / Laptop</option>
+              <option value="Tablet">Tablet</option>
+            </select>
+          </div>
+
+          <!-- Statistical Outlier Filter (Strictly data-driven Tukey IQR rule) -->
+          <div>
+            <label for="filter-outliers" class="block text-[11px] font-semibold uppercase tracking-wide mb-1" style="color: var(--text-muted);">Outlier Week Handling</label>
+            <select id="filter-outliers" onchange="applyFiltersDebounced()" class="input-control w-full rounded-xl px-3 py-2 text-xs font-medium">
+              <option value="include">Include All 26 Weeks (Raw)</option>
+              <option value="exclude">Exclude Tukey Outliers (&gt;Q3+1.5×IQR)</option>
+              <option value="only">Outlier Spike Weeks Only</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Live Statistical Engine Status Card -->
+      <section class="surface-card rounded-2xl p-4 space-y-3" aria-label="Hypothesis Test Diagnostics">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider" style="color: var(--text-muted);">Week-Blocked Test</span>
+          <span id="badge-test-type" class="px-2 py-0.5 rounded-full text-[11px] font-bold" style="background-color: var(--brand-soft); color: var(--brand-primary);">
+            Friedman χ²r
+          </span>
+        </div>
+
+        <div class="surface-alt rounded-xl p-3 space-y-1.5">
+          <div class="flex items-baseline justify-between">
+            <span id="stat-main-label" class="text-xs font-medium" style="color: var(--text-secondary);">Friedman χ²r (df = 7)</span>
+            <span id="stat-main-val" class="font-mono text-base font-bold">112.40</span>
+          </div>
+          <div class="flex items-baseline justify-between">
+            <span class="text-xs font-medium" style="color: var(--text-secondary);">p-value (α = 0.05)</span>
+            <span id="stat-p-val" class="font-mono text-xs font-bold" style="color: var(--status-danger);">&lt; 0.0001</span>
+          </div>
+          <div class="flex items-baseline justify-between">
+            <span id="stat-eff-label" class="text-xs font-medium" style="color: var(--text-secondary);">Kendall's W</span>
+            <span id="stat-eff-val" class="font-mono text-xs font-semibold">0.618 (Large)</span>
+          </div>
+        </div>
+
+        <p id="stat-assumption-note" class="text-[11px] leading-relaxed" style="color: var(--text-muted);">
+          Repeated measures blocked across 26 shared weeks. Non-parametric Friedman test + Holm-corrected paired Wilcoxon post-hoc selected.
+        </p>
+
+        <!-- Analyst Manual Override (Visible in Analyst View) -->
+        <div id="analyst-override-box" class="hidden pt-2 border-t space-y-1.5" style="border-color: var(--border-subtle);">
+          <label for="test-override" class="block text-[11px] font-semibold" style="color: var(--text-secondary);">Analyst Blocked-Test Override</label>
+          <select id="test-override" onchange="applyFiltersDebounced()" class="input-control w-full rounded-xl px-2.5 py-1.5 text-xs">
+            <option value="auto">Auto (Assumption-Guided)</option>
+            <option value="friedman">Force Friedman χ²r + Holm Wilcoxon</option>
+            <option value="rm_anova">Force RM-ANOVA F + Holm Paired-t</option>
+          </select>
+        </div>
+      </section>
+    </aside>
+
+    <!-- RIGHT COLUMN (9 cols on desktop): Navigation Tabs + Answer Views -->
+    <div class="lg:col-span-9 space-y-5 min-w-0">
+
+      <!-- Tab Navigation Strip (4 Purposeful Tabs aligned to the 7 dataset variables) -->
+      <nav class="tab-nav surface-card rounded-2xl p-2" aria-label="Analytical Views">
+        <div id="tab-scroller" class="tab-scroller flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        <button type="button" data-tab="0" onclick="switchTab(0)" class="tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap text-white" style="background-color: var(--brand-primary);">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          <span>1. College Comparison</span>
+        </button>
+
+        <button type="button" data-tab="1" onclick="switchTab(1)" class="tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap" style="color: var(--text-secondary);">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+          <span>2. 26-Week Trends &amp; Boxplots</span>
+        </button>
+
+        <button type="button" data-tab="2" onclick="switchTab(2)" class="tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap" style="color: var(--text-secondary);">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>
+          </svg>
+          <span>3. Device &amp; MFA Priority</span>
+        </button>
+
+        <button type="button" data-tab="3" onclick="switchTab(3)" class="tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap" style="color: var(--text-secondary);">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+          </svg>
+          <span>4. Dataset &amp; Exports</span>
+        </button>
+        </div>
+        <div id="spy-chips" class="spy-chips no-scrollbar" aria-label="On this tab"></div>
+      </nav>
+
+      <!-- ======================================================================
+           TAB 0: COLLEGE COMPARISON (Core Research Question Answer)
+           ====================================================================== -->
+      <section id="panel-0" class="tab-panel space-y-5 animate-entrance">
+
+        <!-- Research Question Verdict Banner (Reframed as Pipeline Demonstration on Simulated Data) -->
+        <div id="sec-verdict" class="surface-card rounded-2xl p-5 border-l-4" style="border-left-color: var(--brand-primary);">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <span id="verdict-eyebrow" class="text-xs font-bold uppercase tracking-wider" style="color: var(--brand-primary);">
+              Pipeline Demonstration · Simulated Effect Scenario (α = 0.05)
+            </span>
+            <span id="verdict-sig-pill" class="px-2.5 py-1 rounded-full text-xs font-bold" style="background-color: var(--status-danger-soft); color: var(--status-danger);">
+              Simulated Gap Detected (p &lt; 0.0001)
+            </span>
+          </div>
+          <h2 id="verdict-headline" class="text-base sm:text-lg font-bold tracking-tight mb-1.5">
+            Pipeline Validation (Effect Scenario): Week-blocked analysis detects the simulated cross-college differences.
+          </h2>
+          <p id="verdict-body" class="text-xs sm:text-sm leading-relaxed" style="color: var(--text-secondary);">
+            Loading verdict...
+          </p>
+        </div>
+
+        <!-- Elastic Rubber-Band KPI Strip (Touch/Mouse Drag with Spring Physics) -->
+        <div id="sec-kpis" class="relative overflow-hidden rounded-2xl">
+          <div id="kpi-carousel-track" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 select-none cursor-grab active:cursor-grabbing">
+            <!-- KPI 1 -->
+            <div class="surface-card rounded-2xl p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[11px] font-semibold uppercase tracking-wide" style="color: var(--text-muted);">University Pooled Rate</span>
+                <span class="text-[11px] font-mono px-1.5 py-0.5 rounded" style="background-color: var(--bg-surface-alt); color: var(--text-secondary);">All 8</span>
+              </div>
+              <div class="flex items-end justify-between gap-2">
+                <div id="kpi-univ-rate" class="text-2xl font-extrabold font-mono tracking-tight">5.84%</div>
+                <span id="kpi-univ-sev" class="sev-badge"></span>
+              </div>
+              <p id="kpi-univ-sub" class="text-xs mt-1" style="color: var(--text-muted);">5.84 failed per 100 attempts</p>
+              <div id="kpi-univ-spark" class="kpi-spark"></div>
+            </div>
+
+            <!-- KPI 2 -->
+            <div class="surface-card rounded-2xl p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[11px] font-semibold uppercase tracking-wide" style="color: var(--text-muted);">Highest-Rate College</span>
+                <span id="kpi-top-badge" class="text-[11px] font-bold px-1.5 py-0.5 rounded" style="background-color: var(--status-danger-soft); color: var(--status-danger);">Rank #1</span>
+              </div>
+              <div class="flex items-end justify-between gap-2">
+                <div id="kpi-top-college" class="text-2xl font-extrabold tracking-tight">CT (10.12%)</div>
+                <span id="kpi-top-sev" class="sev-badge"></span>
+              </div>
+              <p id="kpi-top-sub" class="text-xs mt-1" style="color: var(--text-muted);">College of Technology · Chronic gap</p>
+              <div id="kpi-top-spark" class="kpi-spark"></div>
+            </div>
+
+            <!-- KPI 3 -->
+            <div class="surface-card rounded-2xl p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[11px] font-semibold uppercase tracking-wide" style="color: var(--text-muted);">Chronically Elevated</span>
+                <span class="text-[11px] font-semibold px-1.5 py-0.5 rounded" style="background-color: var(--brand-gold-soft); color: var(--brand-gold);">Holm p&lt;.05</span>
+              </div>
+              <div class="flex items-end justify-between gap-2">
+                <div id="kpi-sig-count" class="text-2xl font-extrabold font-mono tracking-tight">2 of 8</div>
+                <span id="kpi-sig-sev" class="sev-badge"></span>
+              </div>
+              <p id="kpi-sig-sub" class="text-xs mt-1" style="color: var(--text-muted);">CT, CBA (vs. leave-one-out rest)</p>
+              <div id="kpi-sig-spark" class="kpi-spark"></div>
+            </div>
+
+            <!-- KPI 4 (Fixed label: Login Attempts Volume vs. College-Week Observation Count) -->
+            <div class="surface-card rounded-2xl p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[11px] font-semibold uppercase tracking-wide" style="color: var(--text-muted);">Total Login Attempts</span>
+                <span id="kpi-obs-badge" class="text-[11px] font-mono px-1.5 py-0.5 rounded" style="background-color: var(--bg-surface-alt); color: var(--text-secondary);">208 college-wks</span>
+              </div>
+              <div class="flex items-end justify-between gap-2">
+                <div id="kpi-total-attempts" class="text-2xl font-extrabold font-mono tracking-tight">1,248,910</div>
+                <span id="kpi-total-sev" class="sev-badge"></span>
+              </div>
+              <p id="kpi-total-sub" class="text-xs mt-1" style="color: var(--text-muted);">72,940 failed across 208 college-weeks</p>
+              <div id="kpi-total-spark" class="kpi-spark"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ranked College Failed-Login Rate Chart -->
+        <div id="sec-ranking" class="surface-card rounded-2xl p-5">
+          <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold">Ranked Weekly Failed-Login Rate by USeP College (Simulated)</h3>
+              <p id="chart-bar-subtitle" class="text-xs mt-0.5" style="color: var(--text-muted);">
+                Mean &amp; Median failed logins per 100 attempts (±95% CI). Chronic elevation is tested against each college's leave-one-out rest-of-university baseline (Holm-adjusted).
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-[11px] font-medium">
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full" style="background-color: var(--status-danger);"></span> Chronically Elevated (Holm p&lt;0.05)</span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full" style="background-color: var(--status-warn);"></span> Spike-Skewed (Outlier Bursts)</span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full" style="background-color: var(--status-safe);"></span> Within Baseline</span>
+            </div>
+          </div>
+          <div class="relative w-full h-80 sm:h-96">
+            <canvas id="collegeBarChart"></canvas>
+          </div>
+        </div>
+
+        <!-- College Descriptive & Post-Hoc Comparison Table -->
+        <div id="sec-heatmap" class="surface-card rounded-2xl p-5">
+          <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold">Failed-login rate by college and week</h3>
+              <p class="text-xs mt-0.5" style="color: var(--text-muted);">Each cell is one college-week (simulated). Darker means a higher failed-login rate; hatched cells are weeks outside the current scope. Exam weeks are marked above the grid.</p>
+            </div>
+            <div id="heatmap-legend" class="heat-legend" aria-hidden="true">
+              <span>0%</span><span class="heat-legend-bar"></span><span id="heatmap-legend-hi">10%</span>
+            </div>
+          </div>
+          <div class="heat-scroll no-scrollbar">
+            <div id="cohort-heatmap" class="heat-grid" role="grid" aria-label="Failed-login rate by college and week"></div>
+          </div>
+        </div>
+
+        <div id="sec-breakdown" class="surface-card rounded-2xl overflow-hidden">
+          <div class="p-4 sm:p-5 border-b flex flex-wrap items-center justify-between gap-2" style="border-color: var(--border-subtle);">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold">College-Level Statistical &amp; Priority Breakdown</h3>
+              <p class="text-xs" style="color: var(--text-muted);">Parametric (Mean, SD, 95% CI) &amp; Non-Parametric (Median, IQR) metrics vs. Leave-One-Out (LOO) baseline with Holm-corrected paired p-values.</p>
+            </div>
+            <button type="button" onclick="exportSummaryCSV()" class="px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle); color: var(--text-primary);">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>Export Summary CSV</span>
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle); color: var(--text-muted);">
+                  <th class="py-3 px-4 font-bold uppercase">Rank</th>
+                  <th class="py-3 px-4 font-bold uppercase">College</th>
+                  <th class="py-3 px-4 font-bold uppercase text-right">Mean Rate</th>
+                  <th class="py-3 px-4 font-bold uppercase text-right">Median (IQR)</th>
+                  <th class="py-3 px-4 font-bold uppercase text-right">LOO Rest Rate</th>
+                  <th class="py-3 px-4 font-bold uppercase text-right">95% CI</th>
+                  <th class="py-3 px-4 font-bold uppercase text-right">Holm p</th>
+                  <th class="py-3 px-4 font-bold uppercase">Observed Pattern &amp; Classification</th>
+                </tr>
+              </thead>
+              <tbody id="college-summary-tbody" class="divide-y" style="border-color: var(--border-subtle);">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           TAB 1: 26-WEEK TRENDS & BOXPLOT DISTRIBUTIONS
+           ====================================================================== -->
+      <section id="panel-1" class="tab-panel hidden space-y-5 animate-entrance">
+
+        <!-- 26-Week Longitudinal Trend Chart -->
+        <div id="sec-trend" class="surface-card rounded-2xl p-5">
+          <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold">26-Week Longitudinal Failed-Login Trajectory</h3>
+              <p class="text-xs mt-0.5" style="color: var(--text-muted);">
+                Distinguishes persistent weekly elevation (CT, CBA) from sudden multi-week spikes (CIC Wks 11 &amp; 19, CoE Wk 14) and synchronized exam bumps (Wks 8–9, 17–18).
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <label for="trend-cohort-select" class="text-xs font-medium" style="color: var(--text-muted);">Series:</label>
+              <select id="trend-cohort-select" onchange="renderTrendChart()" class="input-control rounded-xl px-3 py-1.5 text-xs font-medium">
+                <option value="key">Key Contrasts (CT, CBA, CIC, CoE vs. Univ. Avg)</option>
+                <option value="all">All 8 USeP Colleges</option>
+                <option value="baseline">Baseline Colleges (CAS, CEd, CAEc, CDM)</option>
+              </select>
+            </div>
+          </div>
+          <div class="relative w-full h-80 sm:h-96">
+            <canvas id="weeklyTrendChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Custom HTML5 Canvas IQR Boxplot & Outlier Spread -->
+        <div id="sec-boxplot" class="surface-card rounded-2xl p-5">
+          <div class="flex flex-wrap items-start justify-between gap-3 mb-3">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold">Weekly Distribution Spread (Median, IQR &amp; Tukey Outliers)</h3>
+              <p class="text-xs mt-0.5" style="color: var(--text-muted);">
+                Boxes show the 25th–75th percentile (IQR) and median line; diamonds mark the mean; dots mark outlier weeks exceeding Q3 + 1.5×IQR.
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-[11px]" style="color: var(--text-secondary);">
+              <span class="flex items-center gap-1.5"><span class="inline-block w-3 h-2 rounded-xs border" style="background-color: var(--brand-soft); border-color: var(--brand-primary);"></span> IQR Box (Q1–Q3)</span>
+              <span class="flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5 rotate-45" style="background-color: var(--brand-gold);"></span> Group Mean</span>
+              <span class="flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full" style="background-color: var(--status-danger);"></span> Outlier Week</span>
+            </div>
+          </div>
+          <div id="boxplot-container" class="relative w-full h-72 sm:h-80">
+            <canvas id="boxplotCanvas"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           TAB 2: DEVICE BREAKDOWN & PHASED MFA ROLLOUT PLANNER
+           ====================================================================== -->
+      <section id="panel-2" class="tab-panel hidden space-y-5 animate-entrance">
+
+        <!-- Device Type Comparison Chart -->
+        <div id="sec-device" class="surface-card rounded-2xl p-5">
+          <div class="mb-4">
+            <h3 class="text-sm sm:text-base font-bold">Failed-Login Rate by Device Type Across Colleges</h3>
+            <p class="text-xs mt-0.5" style="color: var(--text-muted);">
+              Compares Mobile, Desktop/Laptop, and Tablet failure rates per 100 attempts to guide device-specific login hardening and UX improvements.
+            </p>
+          </div>
+          <div class="relative w-full h-72 sm:h-80">
+            <canvas id="deviceGroupedChart"></canvas>
+        <!-- 3-Step MFA & Campaign Rollout Planner (Corrected Outcome Framing — No Unsourced Efficacy %) -->
+        <div id="sec-planner" class="surface-card rounded-2xl p-5 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b pb-3" style="border-color: var(--border-subtle);">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold">Phased MFA &amp; Account-Protection Rollout Planner</h3>
+              <p class="text-xs" style="color: var(--text-muted);">Cohort coverage &amp; account-takeover exposure simulator based on simulated college cohorts.</p>
+            </div>
+            <!-- Step Indicators -->
+            <div class="flex items-center gap-1.5 text-xs font-bold">
+              <button type="button" onclick="goPlannerStep(1)" id="step-pill-1" class="px-3 py-1 rounded-full text-white" style="background-color: var(--brand-primary);">Step 1: Cohort</button>
+              <button type="button" onclick="goPlannerStep(2)" id="step-pill-2" class="px-3 py-1 rounded-full" style="background-color: var(--bg-surface-alt); color: var(--text-secondary);">Step 2: Controls</button>
+              <button type="button" onclick="goPlannerStep(3)" id="step-pill-3" class="px-3 py-1 rounded-full" style="background-color: var(--bg-surface-alt); color: var(--text-secondary);">Step 3: Coverage</button>
+            </div>
+          </div>
+
+          <div id="planner-step-viewport" class="overflow-hidden min-h-[175px]">
+            <!-- Step 1 -->
+            <div id="planner-step-1" class="space-y-3">
+              <p class="text-xs font-semibold uppercase tracking-wide" style="color: var(--brand-primary);">Step 1 of 3 · Select Wave-1 Target Cohort (Exact Simulated Cohort Sizes)</p>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <label class="surface-alt rounded-xl p-3.5 cursor-pointer flex items-start gap-2.5">
+                  <input type="radio" name="mfa-cohort" value="chronic" checked onchange="updatePlannerProjection()" class="mt-0.5 accent-rose-600" />
+                  <div>
+                    <div class="text-xs font-bold">Chronically Elevated (2 Colleges)</div>
+                    <div class="text-[11px] mt-0.5" style="color: var(--text-muted);">CT (1,950) + CBA (2,200) = 4,150 baseline users (Holm p &lt; 0.05).</div>
+                  </div>
+                </label>
+                <label class="surface-alt rounded-xl p-3.5 cursor-pointer flex items-start gap-2.5">
+                  <input type="radio" name="mfa-cohort" value="top4" onchange="updatePlannerProjection()" class="mt-0.5 accent-rose-600" />
+                  <div>
+                    <div class="text-xs font-bold">Chronic + Spike Colleges (4 Colleges)</div>
+                    <div class="text-[11px] mt-0.5" style="color: var(--text-muted);">Adds CIC (1,650) + CoE (2,650) = 8,450 baseline users.</div>
+                  </div>
+                </label>
+                <label class="surface-alt rounded-xl p-3.5 cursor-pointer flex items-start gap-2.5">
+                  <input type="radio" name="mfa-cohort" value="all8" onchange="updatePlannerProjection()" class="mt-0.5 accent-rose-600" />
+                  <div>
+                    <div class="text-xs font-bold">Campus-Wide Mandate (All 8 Colleges)</div>
+                    <div class="text-[11px] mt-0.5" style="color: var(--text-muted);">All 8 simulated USeP colleges = 15,850 baseline active users.</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div id="planner-step-2" class="hidden space-y-3">
+              <p class="text-xs font-semibold uppercase tracking-wide" style="color: var(--brand-primary);">Step 2 of 3 · Select Layered IAM Controls (NIST SP 800-63B Aligned)</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label class="surface-alt rounded-xl p-3.5 cursor-pointer flex items-start gap-2.5">
+                  <input type="checkbox" id="chk-mfa" checked onchange="updatePlannerProjection()" class="mt-0.5 accent-rose-600" />
+                  <div>
+                    <div class="text-xs font-bold">Mandatory Phishing-Resistant / App MFA</div>
+                    <div class="text-[11px] mt-0.5" style="color: var(--text-muted);">Prevents unauthorized account takeovers when passwords are compromised (does not stop invalid password attempts at the primary prompt).</div>
+                  </div>
+                </label>
+                <label class="surface-alt rounded-xl p-3.5 cursor-pointer flex items-start gap-2.5">
+                  <input type="checkbox" id="chk-hygiene" checked onchange="updatePlannerProjection()" class="mt-0.5 accent-rose-600" />
+                  <div>
+                    <div class="text-xs font-bold">NIST 800-63B Passphrases, Blocklist &amp; Throttling</div>
+                    <div class="text-[11px] mt-0.5" style="color: var(--text-muted);">Replaces periodic rotation &amp; symbol rules with 12+ char passphrases, breached-password screening, and progressive login rate-limiting.</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div id="planner-step-3" class="hidden space-y-3">
+              <p class="text-xs font-semibold uppercase tracking-wide" style="color: var(--brand-primary);">Step 3 of 3 · Cohort Exposure &amp; MFA Protection Coverage</p>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="surface-alt rounded-xl p-3.5">
+                  <div class="text-[11px] font-semibold" style="color: var(--text-muted);">Avg Weekly Active Users Covered</div>
+                  <div id="proj-users" class="text-xl font-extrabold font-mono mt-1">4,150</div>
+                  <div id="proj-users-sub" class="text-[10px] mt-0.5" style="color: var(--text-muted);">26.2% of simulated USeP cohort</div>
+                </div>
+                <div class="surface-alt rounded-xl p-3.5">
+                  <div class="text-[11px] font-semibold" style="color: var(--text-muted);">Failed Attempts in Target Cohort</div>
+                  <div id="proj-target-failed" class="text-xl font-extrabold font-mono mt-1" style="color: var(--brand-primary);">31,180</div>
+                  <div id="proj-failed-share" class="text-[10px] mt-0.5" style="color: var(--text-muted);">42.7% of all simulated failed logins</div>
+                </div>
+                <div class="surface-alt rounded-xl p-3.5">
+                  <div class="text-[11px] font-semibold" style="color: var(--text-muted);">Account Takeover Posture</div>
+                  <div id="proj-posture" class="text-base font-extrabold mt-1" style="color: var(--status-safe);">MFA + Throttling</div>
+                  <div class="text-[10px] mt-0.5" style="color: var(--text-muted);">Compromised passwords blocked at 2nd factor</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-2 border-t" style="border-color: var(--border-subtle);">
+            <button type="button" id="btn-step-prev" onclick="stepPlanner(-1)" disabled class="px-3.5 py-2 rounded-xl text-xs font-semibold border disabled:opacity-40" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle);">
+              ← Previous
+            </button>
+            <button type="button" id="btn-step-next" onclick="stepPlanner(1)" class="px-4 py-2 rounded-xl text-xs font-semibold text-white" style="background-color: var(--brand-primary);">
+              Next Step →
+            </button>
+          </div>
+        </div>
+
+        <!-- Smooth Height-Auto Accordions + NIST SP 800-63B Password Policy Simulator -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <!-- Policy Accordions (Non-Causal Wording & NIST SP 800-63B Compliant) -->
+          <div id="sec-guidance" class="surface-card rounded-2xl p-5 space-y-3">
+            <h3 class="text-sm sm:text-base font-bold">Evidence-Based IAM Recommendations (NIST SP 800-63B)</h3>
+
+            <div class="accordion-item surface-alt rounded-xl" data-open="true">
+              <button type="button" onclick="toggleAccordion(this)" class="w-full p-3.5 flex items-center justify-between text-left text-xs font-bold">
+                <span>1. Prioritize CT &amp; CBA for MFA &amp; Passphrase Onboarding</span>
+                <svg class="accordion-chevron w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="accordion-body px-3.5">
+                <p class="pb-3.5 text-xs leading-relaxed" style="color: var(--text-secondary);">
+                  CT (10.1% mean) and CBA (9.0% mean) show sustained elevation across all 26 weeks—a pattern consistent with persistent credential friction (such as forgotten passwords, password reuse, or input errors, though aggregate counts alone cannot distinguish user typos from automated guessing). Per <strong>NIST SP 800-63B</strong>, avoid forced periodic password rotation and symbol-composition rules (which increase lockouts); instead, enroll these cohorts in MFA and enforce 12+ character passphrases screened against breached-password blocklists.
+                </p>
+              </div>
+            </div>
+
+            <div class="accordion-item surface-alt rounded-xl" data-open="false">
+              <button type="button" onclick="toggleAccordion(this)" class="w-full p-3.5 flex items-center justify-between text-left text-xs font-bold">
+                <span>2. Rate-Limit Desktop Bursts &amp; Protect Accounts with MFA</span>
+                <svg class="accordion-chevron w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="accordion-body px-3.5">
+                <p class="pb-3.5 text-xs leading-relaxed" style="color: var(--text-secondary);">
+                  CIC and CoE maintain low typical medians (~3.9%–4.3%) but exhibit isolated single-week Desktop/Laptop surges (&gt;18%), consistent with automated credential-stuffing or spraying bursts. While MFA does not prevent external bots from generating failed primary-login attempts, requiring MFA blocks successful account takeovers when passwords are leaked, and progressive rate-limiting/throttling curbs burst volume.
+                </p>
+              </div>
+            </div>
+
+            <div class="accordion-item surface-alt rounded-xl" data-open="false">
+              <button type="button" onclick="toggleAccordion(this)" class="w-full p-3.5 flex items-center justify-between text-left text-xs font-bold">
+                <span>3. Mobile Input UX &amp; Pre-Exam Self-Service Recovery</span>
+                <svg class="accordion-chevron w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="accordion-body px-3.5">
+                <p class="pb-3.5 text-xs leading-relaxed" style="color: var(--text-secondary);">
+                  Simulated Mobile logins sit ~1.4 percentage points above Desktop/Laptop baselines across all 8 colleges and rise together during Midterm (Weeks 8–9) and Final Exam (Weeks 17–18) windows. Adding a "Show Password" reveal toggle, disabling auto-capitalization on username fields, and sending pre-exam self-service reset reminders reduces avoidable user lockouts.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- UVE Student Orientation Password Policy Tester (NIST SP 800-63B Length + Blocklist) -->
+          <div class="surface-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm sm:text-base font-bold">NIST SP 800-63B Passphrase Checker</h3>
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full" style="background-color: var(--brand-soft); color: var(--brand-primary);">Awareness Demo</span>
+              </div>
+              <p class="text-xs leading-relaxed" style="color: var(--text-muted);">
+                Per <strong>NIST SP 800-63B</strong>, modern password guidance drops mandatory uppercase/symbol composition rules and periodic rotation in favor of <strong>length (12+ characters)</strong> and <strong>blocklist screening</strong> against common or institutional terms (<code class="font-mono">usep</code>, <code class="font-mono">davao</code>, <code class="font-mono">password</code>, <code class="font-mono">1234</code>).
+              </p>
+            </div>
+
+            <form onsubmit="validateDemoPassword(event)" class="space-y-3">
+              <div>
+                <label for="demo-pwd-input" class="block text-[11px] font-semibold uppercase tracking-wide mb-1" style="color: var(--text-muted);">Sample Student UVE Passphrase</label>
+                <input id="demo-pwd-input" type="text" placeholder="Try 'usep2026' or 'durian mango mount apo'" class="input-control w-full rounded-xl px-3.5 py-2.5 text-xs font-mono" />
+              </div>
+              <p id="demo-pwd-feedback" class="text-xs min-h-[18px]" style="color: var(--text-muted);">
+                Enter a passphrase (12+ characters, not on the blocklist) to test NIST 800-63B compliance.
+              </p>
+              <div class="flex items-center gap-2">
+                <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold text-white" style="background-color: var(--brand-primary);">
+                  Check NIST 800-63B Rule
+                </button>
+                <button type="button" onclick="fillWeakSample()" class="px-3 py-2 rounded-xl text-xs font-semibold border" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle); color: var(--text-secondary);">
+                  Test Blocklisted Sample
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           TAB 3: DATASET EXPLORER & ONE-CLICK CSV EXPORTS
+           ====================================================================== -->
+      <section id="panel-3" class="tab-panel hidden space-y-4 animate-entrance">
+        <div id="sec-records" class="surface-card rounded-2xl p-4 sm:p-5 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold">Simulated UVE Login Records</h3>
+              <p id="records-subtitle" class="text-xs" style="color: var(--text-muted);">
+                Showing 208 pooled college-week summaries across 8 USeP colleges (26 weeks).
+              </p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <button type="button" onclick="exportFilteredRecordsCSV()" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-white flex items-center gap-1.5" style="background-color: var(--brand-primary);">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Export Filtered CSV</span>
+              </button>
+              <button type="button" onclick="exportSummaryCSV()" class="px-3.5 py-2 rounded-xl text-xs font-semibold border flex items-center gap-1.5" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle);">
+                <span>Export College Stats CSV</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Search & Granularity Controls -->
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="records-search-wrap flex items-center gap-2 w-full sm:w-auto">
+              <div class="relative w-full sm:w-72">
+                <input id="records-search" type="search" oninput="renderRecordsTable()" placeholder="Search college, device or week (press / to focus)" autocomplete="off" class="input-control w-full rounded-xl pl-3.5 pr-8 py-2 text-xs" />
+                <button id="records-clear" type="button" onclick="clearRecordsSearch()" aria-label="Clear search" class="records-clear hidden">&times;</button>
+              </div>
+              <span id="records-match-count" class="text-[11px] font-semibold whitespace-nowrap" style="color: var(--text-muted);" aria-live="polite"></span>
+            </div>
+
+            <div class="flex items-center gap-2 text-xs">
+              <span style="color: var(--text-muted);">Granularity:</span>
+              <select id="records-granularity" onchange="renderRecordsTable()" class="input-control rounded-xl px-3 py-1.5 text-xs font-medium">
+                <option value="pooled">Pooled College-Weeks (N = 208)</option>
+                <option value="device">Segmented by Device Type (N = 624)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Data Table -->
+          <div class="overflow-x-auto rounded-xl border" style="border-color: var(--border-subtle);">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle); color: var(--text-muted);">
+                  <th class="py-2.5 px-3 font-bold uppercase cursor-pointer" onclick="sortRecords('week')">Week ↕</th>
+                  <th class="py-2.5 px-3 font-bold uppercase cursor-pointer" onclick="sortRecords('college')">College ↕</th>
+                  <th class="py-2.5 px-3 font-bold uppercase cursor-pointer" onclick="sortRecords('device_type')">Device Type ↕</th>
+                  <th class="py-2.5 px-3 font-bold uppercase text-right cursor-pointer" onclick="sortRecords('active_users')">Active Users ↕</th>
+                  <th class="py-2.5 px-3 font-bold uppercase text-right cursor-pointer" onclick="sortRecords('login_attempts')">Login Attempts ↕</th>
+                  <th class="py-2.5 px-3 font-bold uppercase text-right cursor-pointer" onclick="sortRecords('failed_logins')">Failed Logins ↕</th>
+                  <th class="py-2.5 px-3 font-bold uppercase text-right cursor-pointer" onclick="sortRecords('failed_login_rate')">Failed Rate (%) ↕</th>
+                </tr>
+              </thead>
+              <tbody id="records-tbody" class="divide-y font-mono" style="border-color: var(--border-subtle);">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+          <div class="flex items-center justify-between text-xs" style="color: var(--text-muted);">
+            <span id="records-count-label">Showing 1–25 of 208 rows</span>
+            <div class="flex items-center gap-2">
+              <button type="button" id="btn-page-prev" onclick="changeRecordPage(-1)" class="px-3 py-1 rounded-lg border" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle);">Prev</button>
+              <button type="button" id="btn-page-next" onclick="changeRecordPage(1)" class="px-3 py-1 rounded-lg border" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle);">Next</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Subtle Institutional Footer -->
+  <footer class="max-w-7xl w-full mx-auto px-4 sm:px-6 pb-6 pt-2 flex flex-wrap items-center justify-between gap-2 text-[11px]" style="color: var(--text-muted);">
+    <span>KandadoHoy · Failed UVE Logins Across USeP Colleges (Simulated 26-Week Cohort)</span>
+    <span>Project Team: Sean Sidrek Tacardon &amp; Azriel Geoff Consencino</span>
+  </footer>
+
+  <!-- ==========================================================================
+       3. ABOUT, METHODOLOGY, ASSUMPTIONS & PYTHON VERIFICATION MODAL
+       ========================================================================== -->
+  <div id="info-modal-backdrop" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/60 backdrop-blur-xs" onclick="if(event.target===this) closeInfoModal()">
+    <div id="info-modal-sheet" class="surface-card rounded-3xl max-w-3xl w-full max-h-[88vh] flex flex-col overflow-hidden animate-entrance" style="box-shadow: var(--shadow-float);">
+      <!-- Drag Handle -->
+      <div id="modal-drag-handle" class="pt-3 pb-1 flex justify-center cursor-ns-resize">
+        <div class="w-10 h-1 rounded-full" style="background-color: var(--border-strong);"></div>
+      </div>
+
+      <div class="px-6 py-3 border-b flex items-center justify-between gap-3" style="border-color: var(--border-subtle);">
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-base font-extrabold">About KandadoHoy &amp; Study Methodology</h2>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide" style="background-color: var(--brand-gold-soft); color: var(--brand-gold);">
+              Simulated Data
+            </span>
+          </div>
+          <p class="text-xs" style="color: var(--text-muted);">University of Southeastern Philippines (USeP) · Virtual Environment (UVE)</p>
+        </div>
+        <button type="button" onclick="closeInfoModal()" class="p-2 rounded-xl border" style="background-color: var(--bg-surface-alt); border-color: var(--border-subtle);" aria-label="Close modal">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-4 text-xs leading-relaxed" style="color: var(--text-secondary);">
+        <!-- ABOUT THE PROJECT & TEAM METADATA -->
+        <div class="surface-alt rounded-2xl p-4 space-y-3 border-l-4" style="border-left-color: var(--brand-primary);">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="font-bold text-sm" style="color: var(--text-primary);">About the Project</h3>
+            <span class="text-[11px] font-mono" style="color: var(--text-muted);">Identity &amp; Access Management (IAM)</span>
+          </div>
+          <p>
+            <strong>KandadoHoy</strong> (<em>Failed UVE Logins Across USeP Colleges</em>) is an information security analytics dashboard developed to help USeP's IT office and college deans evaluate whether weekly failed login rates on the University Virtual Environment (UVE) differ significantly across 8 USeP colleges. Distinguishing chronic password-hygiene gaps from sudden multi-week credential bursts enables targeted cybersecurity awareness campaigns and phased Multi-Factor Authentication (MFA) rollout.
+          </p>
+          <p class="text-[11px]" style="color: var(--text-muted);">
+            <strong>Data Transparency Notice:</strong> The records presented in this dashboard are <strong>simulated</strong> 26-week college-level summaries generated for statistical analysis and academic demonstration; they do not contain actual student credentials or live USeP authentication logs.
+          </p>
+
+          <!-- Structured Key-Value Project & Dataset Summary -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t" style="border-color: var(--border-subtle);">
+            <div class="rounded-xl p-3 space-y-2" style="background-color: var(--bg-surface);">
+              <div class="text-[11px] font-bold uppercase tracking-wider" style="color: var(--brand-primary);">Project Information</div>
+              <dl class="space-y-1.5 text-[11px]">
+                <div class="flex justify-between gap-2">
+                  <dt style="color: var(--text-muted);">Project Title</dt>
+                  <dd class="font-semibold text-right" style="color: var(--text-primary);">KandadoHoy: Failed UVE Logins</dd>
+                </div>
+                <div class="flex justify-between gap-2">
+                  <dt style="color: var(--text-muted);">Members</dt>
+                  <dd class="font-semibold text-right" style="color: var(--text-primary);">
+                    1. Sean Sidrek Tacardon<br />
+                    2. Azriel Geoff Consencino
+                  </dd>
+                </div>
+                <div class="flex justify-between gap-2">
+                  <dt style="color: var(--text-muted);">Security Domain</dt>
+                  <dd class="font-semibold text-right" style="color: var(--text-primary);">Identity and Access</dd>
+                </div>
+                <div class="pt-1 border-t" style="border-color: var(--border-subtle);">
+                  <dt class="mb-0.5" style="color: var(--text-muted);">Research Question</dt>
+                  <dd class="font-medium" style="color: var(--text-primary);">Does the average weekly failed-login rate differ significantly across the 8 USeP colleges?</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div class="rounded-xl p-3 space-y-2" style="background-color: var(--bg-surface);">
+              <div class="text-[11px] font-bold uppercase tracking-wider" style="color: var(--brand-primary);">Dataset Specifications</div>
+              <dl class="space-y-1.5 text-[11px]">
+                <div class="flex justify-between gap-2">
+                  <dt style="color: var(--text-muted);">Data Type</dt>
+                  <dd class="font-semibold text-right" style="color: var(--text-primary);">Simulated Weekly Summaries</dd>
+                </div>
+                <div class="flex justify-between gap-2">
+                  <dt style="color: var(--text-muted);">Observation Window</dt>
+                  <dd class="font-semibold text-right" style="color: var(--text-primary);">26 Academic Weeks</dd>
+                </div>
+                <div class="flex justify-between gap-2">
+                  <dt style="color: var(--text-muted);">Colleges &amp; Devices</dt>
+                  <dd class="font-semibold text-right" style="color: var(--text-primary);">8 Colleges × 3 Device Types</dd>
+                </div>
+                <div class="flex justify-between gap-2">
+                  <dt style="color: var(--text-muted);">Total Records</dt>
+                  <dd class="font-mono font-semibold text-right" style="color: var(--text-primary);">208 Pooled / 624 Segmented</dd>
+                </div>
+                <div class="pt-1 border-t" style="border-color: var(--border-subtle);">
+                  <dt class="mb-0.5" style="color: var(--text-muted);">Variables</dt>
+                  <dd class="font-mono text-[10px]" style="color: var(--text-primary);">week, college, device_type, active_users, login_attempts, failed_logins, failed_login_rate</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <div class="surface-alt rounded-2xl p-4 space-y-1.5">
+          <h3 class="font-bold text-sm" style="color: var(--text-primary);">1. Metric Formula &amp; Pooled Aggregation Rule</h3>
+          <p>
+            Each record captures weekly UVE login telemetry across <strong>8 USeP colleges</strong> over <strong>26 academic weeks</strong> segmented by <strong>3 device types</strong> (<code class="font-mono">Mobile</code>, <code class="font-mono">Desktop/Laptop</code>, <code class="font-mono">Tablet</code>). When viewing all devices combined, counts are pooled prior to division to avoid Simpson's Paradox:
+          </p>
+          <div class="font-mono text-xs p-2.5 rounded-xl mt-1" style="background-color: var(--bg-input); color: var(--brand-primary);">
+            failed_login_rate = (sum(failed_logins) / sum(login_attempts)) × 100
+          </div>
+        </div>
+
+        <div class="surface-alt rounded-2xl p-4 space-y-1.5">
+          <h3 class="font-bold text-sm" style="color: var(--text-primary);">2. Explicit Simulation Assumptions &amp; Random Seeds</h3>
+          <ul class="list-disc pl-4 space-y-1">
+            <li><strong>Random Seeds &amp; Scenarios:</strong> Deterministic Mulberry32 PRNG with <code class="font-mono">seed = 20260926</code> for the <em>Effect Scenario</em> (modeled differences + bursts) and <code class="font-mono">seed = 20260927</code> for the <em>Null-Data Control</em> (identical 5.5% baseline across all 8 colleges, zero injected bursts).</li>
+            <li><strong>Cohort Sizes (Total = 15,850 baseline active users/week):</strong> CAS (~2,950), CoE (~2,650), CEd (~2,400), CBA (~2,200), CT (~1,950), CIC (~1,650), CAEc (~1,100), and CDM (~950).</li>
+            <li><strong>Device-Type Multipliers (+1.4 pp Mobile Effect):</strong> <code class="font-mono">Mobile</code> accounts for 54% of users (3.4 attempts/user/wk, <code class="font-mono">1.18×</code> baseline rate multiplier), <code class="font-mono">Desktop/Laptop</code> for 36% (4.1 attempts/user/wk, <code class="font-mono">0.86×</code> multiplier), and <code class="font-mono">Tablet</code> for 10% (2.3 attempts/user/wk, <code class="font-mono">0.96×</code> multiplier). Across the 8 colleges, Mobile's <code class="font-mono">1.18×</code> vs. Desktop's <code class="font-mono">0.86×</code> multiplier produces a ~<strong>+1.4 percentage point</strong> higher baseline failure rate on Mobile.</li>
+            <li><strong>Effect Scenario Elevations &amp; Bursts:</strong> CT (9.8% base) and CBA (8.7% base) are generated with persistent chronic elevation across all 26 weeks. CIC (3.9% base) and CoE (4.3% base) have low baselines with injected Desktop/Laptop credential bursts (CIC Wks 11 &amp; 19 at 28.5% &amp; 24.5%; CoE Wk 14 at 22.5%).</li>
+            <li><strong>Shared Academic Calendar Friction:</strong> Both scenarios apply a synchronized <code class="font-mono">1.26×</code> failure-rate multiplier and <code class="font-mono">1.22×</code> attempt-volume multiplier across all 8 colleges during Midterm (Weeks 8–9) and Final Exam (Weeks 17–18) periods—motivating a week-blocked repeated-measures test.</li>
+          </ul>
+        </div>
+
+        <div class="surface-alt rounded-2xl p-4 space-y-2">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-sm" style="color: var(--text-primary);">3. Python Generator &amp; Statistical Verification Script</h3>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="copyPythonScript()" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border" style="background-color: var(--bg-surface); border-color: var(--border-subtle);">Copy Code</button>
+              <button type="button" onclick="downloadPythonScript()" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-white" style="background-color: var(--brand-primary);">Download .py</button>
+            </div>
+          </div>
+          <pre id="python-code-block" class="font-mono text-[11px] p-3 rounded-xl overflow-x-auto" style="background-color: var(--bg-input); color: var(--text-primary);">import numpy as np
+import pandas as pd
+import scipy.stats as stats
+from statsmodels.stats.multitest import multipletests
+
+# 1. Reproducible Data Generator (Matches KandadoHoy Dashboard Seeds)
+def simulate_uve_cohort(scenario="effect", seed=20260926):
+    rng = np.random.default_rng(seed)
+    colleges = [
+        ("CT", 1950, 0.098), ("CBA", 2200, 0.087), ("CIC", 1650, 0.039),
+        ("CoE", 2650, 0.043), ("CAEc", 1100, 0.051), ("CAS", 2950, 0.048),
+        ("CEd", 2400, 0.046), ("CDM", 950, 0.044),
+    ]
+    devices = [("Mobile", 0.54, 3.4, 1.18), ("Desktop/Laptop", 0.36, 4.1, 0.86), ("Tablet", 0.10, 2.3, 0.96)]
+    exam_weeks = {8, 9, 17, 18}
+    rows = []
+    for week in range(1, 27):
+        exam_mult = 1.26 if week in exam_weeks else 1.0
+        att_mult = 1.22 if week in exam_weeks else 1.0
+        wave = 1.0 + 0.05 * np.sin((week / 26.0) * 2 * np.pi)
+        for code, base_u, base_r in colleges:
+            eff_r = 0.055 if scenario == "null" else base_r
+            for dev, share, apu, r_mult in devices:
+                users = round(base_u * share * wave * rng.uniform(0.95, 1.05))
+                attempts = max(users, round(users * apu * att_mult * rng.uniform(0.94, 1.06)))
+                rate = eff_r * r_mult * exam_mult * rng.uniform(0.88, 1.12)
+                if scenario == "effect" and dev == "Desktop/Laptop":
+                    if code == "CIC" and week in (11, 19): rate = 0.285 if week == 11 else 0.245
+                    if code == "CoE" and week == 14: rate = 0.225
+                failed = min(attempts, max(1, round(attempts * rate)))
+                rows.append((week, code, dev, users, attempts, failed))
+    return pd.DataFrame(rows, columns=["week", "college", "device_type", "active_users", "login_attempts", "failed_logins"])
+
+# 2. Pool device counts per (week, college) before computing rate (avoids Simpson's Paradox)
+df = simulate_uve_cohort(scenario="effect", seed=20260926)
+pooled = df.groupby(["week", "college"], as_index=False).sum(numeric_only=True)
+pooled["rate"] = (pooled["failed_logins"] / pooled["login_attempts"]) * 100
+piv = pooled.pivot(index="week", columns="college", values="rate")  # 26 week blocks x 8 colleges
+
+# 3. Week-Blocked Omnibus Friedman Test + Kendall's W Effect Size
+b, k = piv.shape
+chi2_r, p_friedman = stats.friedmanchisquare(*[piv[c] for c in piv.columns])
+kendalls_w = chi2_r / (b * (k - 1))
+print(f"Friedman chi2_r(df={k-1}) = {chi2_r:.4f}, p = {p_friedman:.6f}, Kendall's W = {kendalls_w:.4f}")
+
+# 4. Leave-One-College-Out (LOO) Paired Wilcoxon Post-Hoc + Holm Correction
+raw_p, codes = [], list(piv.columns)
+for c in codes:
+    others = df[df["college"] != c].groupby("week", as_index=False).sum(numeric_only=True)
+    loo_rate = (others["failed_logins"] / others["login_attempts"]) * 100
+    _, p_w = stats.wilcoxon(piv[c].values, loo_rate.values)
+    raw_p.append(p_w)
+
+_, p_holm, _, _ = multipletests(raw_p, alpha=0.05, method="holm")
+for c, p0, ph in zip(codes, raw_p, p_holm):
+    print(f"  {c:4s}: median={piv[c].median():.2f}%, raw_p={p0:.6f}, holm_p={ph:.6f}")</pre>
+        </div>
+      </div>
+
+      <div class="px-6 py-3.5 border-t flex justify-end" style="border-color: var(--border-subtle);">
+        <button type="button" onclick="closeInfoModal()" class="px-5 py-2 rounded-xl text-xs font-bold text-white" style="background-color: var(--brand-primary);">
+          Close Methodology
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Floating Tooltip & Toast Notification -->
+  <div id="heatmap-tooltip" class="heat-tooltip" role="tooltip" aria-hidden="true"></div>
+  <div id="global-tooltip" class="px-3 py-1.5 rounded-xl text-[11px] font-medium shadow-lg border" style="background-color: var(--bg-surface); border-color: var(--border-strong); color: var(--text-primary);"></div>
+
+  <div id="toast-banner" class="fixed bottom-4 right-4 z-50 hidden items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-semibold shadow-xl border animate-entrance" style="background-color: var(--bg-surface); border-color: var(--border-strong); color: var(--text-primary);">
+    <span class="w-2 h-2 rounded-full" style="background-color: var(--brand-primary);"></span>
+    <span id="toast-message">Updated view</span>
+  </div>
+
+  <!-- ==========================================================================
+       4. APPLICATION LOGIC: DATA SIMULATION, STATISTICAL ENGINE & CHARTS
+       ========================================================================== -->
+  <script src="js/data.js"></script>
+  <script src="js/visuals.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
